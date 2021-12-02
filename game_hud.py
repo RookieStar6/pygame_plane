@@ -172,7 +172,7 @@ class HUDPanel(object):
 
         #get hint based on the status of game
         statues = 'Game Over!' if is_game_over else 'Game Paused!'
-        tip = 'Press spacebar to'
+        tip = 'Press spacebar to '
         tip += 'play again' if is_game_over else 'continue.'
 
         #modify the contents
@@ -192,3 +192,27 @@ class HUDPanel(object):
 
         #correct the status button
         self.status_sprite.switch_status(True)
+
+    def panel_resume(self, display_group):
+        '''
+        the label should be hid
+        :param display_group:
+        :return: None
+        '''
+        display_group.remove(self.best_label, self.status_label, self.tip_label)
+
+        self.status_sprite.switch_status(False)
+
+    def reset_panel(self):
+        '''
+        reset the panel
+        :return: None
+        '''
+
+        self.score = 0
+        self.lives_count = 3
+
+        #reset the sprite
+        self.increase_score(0)
+        self.show_bomb(3)
+        self.show_lives()
