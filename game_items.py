@@ -12,6 +12,11 @@ FRAME_INTERVAL = 10  # 每帧动画的间隔
 HERO_BOMB_COUNT = 5
 HERO_DEFAULT_POSITION = (SCREEN_RECT.centerx, SCREEN_RECT.bottom - 90)
 
+# 英雄死亡事件
+HERO_DEAD_EVENT =pygame.USEREVENT
+# 英雄无敌事件
+HERO_ISPOWER_EVENT=pygame.USEREVENT+1
+
 
 class GameSprite(pygame.sprite.Sprite):
     image_path = './resource/demo_images/'
@@ -22,6 +27,9 @@ class GameSprite(pygame.sprite.Sprite):
 
         # 创建图片
         self.image = pygame.image.load(self.image_path + image_name)
+
+        # 生成mash，提高碰撞检测效率
+        self.mask = pygame.mask.from_surface(self.image)
 
         # 获取矩形
         self.rect = self.image.get_rect()
@@ -222,8 +230,23 @@ class Hero(Plane):
         self.bomb_count -= 1
         score = 0
         for i in enemies_groups.sprites():
-            if i.rect.bottom >0 :
+            if i.rect.bottom > 0:
                 score += i.value
                 i.hp = 0
 
         return score
+
+    def reset_plane(self):
+        super(Hero,self).reset_plane()
+
+        # 重写自己的方法
+        self.is_power = False
+        self.bomb_count =HERO_BOMB_COUNT
+        self.bullets_kind=0
+
+        # 数据重置完后，发布事件.
+        pygame.event.post(pygame.event.Event(HERO_DEAD_EVENT))
+
+        # 发布无敌事件
+        pygame.time.set_timer(HERO_ISPOWER_EVENT,50000)
+

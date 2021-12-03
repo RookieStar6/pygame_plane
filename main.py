@@ -30,6 +30,7 @@ class Game(object):
         self.hud_panel.change_bomb(self.myplane.bomb_count)
         # 初始化敌机
         self.create_enemies()
+
         # 音乐播放
 
     def rest_game(self):
@@ -74,6 +75,8 @@ class Game(object):
                 move_ver = keys[pygame.K_DOWN] - keys[pygame.K_UP]
                 # 12%10=2  102%10=2 ,所以frame_count 的范围只有在0-10.FPS=60 一秒frame_count就会加到60.但是%10,只会刷新6次
                 frame_count = (frame_count + 1) % FRAME_INTERVAL
+
+                self.check_collide()
                 # 精灵组重写的update方法
                 self.all_group.update(frame_count == 0, move_hor, move_ver)
             # 绘制内容
@@ -108,6 +111,14 @@ class Game(object):
                     if self.hud_panel.increase_score(score):
                         self.create_enemies()
 
+                # 触发用户自定义事件
+                elif event.type == HERO_DEAD_EVENT:
+                    #玩家飞机死亡
+                    self.hud_panel.lives_count -=1
+                    self.hud_panel.change_lives()
+                    self.hud_panel.change_bomb(self.myplane.bomb_count)
+                # 触发无敌事件
+
         return False
 
     def create_enemies(self):
@@ -138,6 +149,22 @@ class Game(object):
                 Enemy(1, 3, *group)
             for i in range(2):
                 Enemy(2, 1, *group)
+
+    def check_collide(self):
+        # 先检查是否无敌
+        if self.myplane.is_power:
+            return
+        # 最后一个参数如果是pygame.sprite.collide_mask，可以实现高品质碰撞检测。 无视透明部分。
+        collide_list = pygame.sprite.spritecollide(self.myplane, self.enemies_group, False, pygame.sprite.collide_mask)
+
+        # 利用filter自带的函数，把爆炸之后的飞机移除列表.防止飞机残骸损伤飞机
+        collide_list = list(filter(lambda x: x.hp > 0, collide_list))
+        # 销毁敌人飞机
+        for i in collide_list:
+            i.hp = 0
+        # 销毁玩家飞机
+        if collide_list:
+            self.myplane.hp = 0
 
 
 if __name__ == '__main__':
