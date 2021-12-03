@@ -9,15 +9,21 @@ import random
 SCREEN_RECT = pygame.Rect(0, 0, 512, 768)
 FRAME_INTERVAL = 10  # 每帧动画的间隔
 
-HERO_BOMB_COUNT = 5
+HERO_BOMB_COUNT = 3
 HERO_DEFAULT_POSITION = (SCREEN_RECT.centerx, SCREEN_RECT.bottom - 90)
 
 # 英雄死亡事件
-HERO_DEAD_EVENT =pygame.USEREVENT
+HERO_DEAD_EVENT = pygame.USEREVENT
 # 英雄无敌事件
-HERO_ISPOWER_EVENT=pygame.USEREVENT+1
+HERO_ISPOWER_EVENT = pygame.USEREVENT + 1
+# 子弹事件
+HERO_FIRE_EVENT = pygame.USEREVENT + 2
 
+# 道具投放事件
+THROW_SUPPORT_EVENT = pygame.USEREVENT + 3
 
+# 双排道具事件
+BULLET_ENAHCE_EVENT =pygame.USEREVENT +4
 class GameSprite(pygame.sprite.Sprite):
     image_path = './resource/demo_images/'
 
@@ -210,6 +216,9 @@ class Hero(Plane):
 
         self.rect.midbottom = HERO_DEFAULT_POSITION
 
+        # 创建玩家后，触发子弹事件
+        pygame.time.set_timer(HERO_FIRE_EVENT, 200)
+
     def update(self, *args):
         super(Hero, self).update(*args)
         self.rect.x += args[1] * 7
@@ -237,16 +246,70 @@ class Hero(Plane):
         return score
 
     def reset_plane(self):
-        super(Hero,self).reset_plane()
+        super(Hero, self).reset_plane()
 
         # 重写自己的方法
-        self.is_power = False
-        self.bomb_count =HERO_BOMB_COUNT
-        self.bullets_kind=0
+        self.is_power = True
+        self.bomb_count = HERO_BOMB_COUNT
+        self.bullets_kind = 0
 
         # 数据重置完后，发布事件.
         pygame.event.post(pygame.event.Event(HERO_DEAD_EVENT))
 
         # 发布无敌事件
-        pygame.time.set_timer(HERO_ISPOWER_EVENT,50000)
+        pygame.time.set_timer(HERO_ISPOWER_EVENT, 3000)
 
+    def fire(self, display_groups):
+        # 准备要显示的组
+        groups = (display_groups, self.bullets_groups)
+        # 创建子弹并且确定位置
+        for i in range(3):
+            bullet1 = Bullet(self.bullets_kind, *groups)
+            y = self.rect.y - i * 15
+            # if self.bullets_kind == 0:
+            #     bullet1.rect.midbottom = (self.rect.centerx, y)
+            # else:
+            #     bullet1.rect.midbottom = (self.rect.centerx - 20, y)
+            #     bullet2 = Bullet(self.bullets_kind, *groups)
+            #     bullet2.rect.midbottom = (self.rect.centerx + 20, y)
+            bullet1.rect.midbottom = (self.rect.centerx, y)
+
+class Bullet(GameSprite):
+    def __init__(self, kind, *group):
+        # 初始化子弹数据
+        image_name = "bullet1.png" if kind == 0 else "bullet3.png"
+        super(Bullet, self).__init__(image_name, -12, *group)
+
+        self.damage = 1
+
+    def update(self, *args):
+        # 更新子弹的数据
+        super(Bullet, self).update(*args)
+
+        # 飞出屏幕之外的子弹销毁
+        if self.rect.bottom < 0:
+            self.kill()
+
+
+class Supply(GameSprite):
+    def __init__(self, kind, *group):
+        image_name = 'bomb_supply.png' if kind == 0 else 'bullet_supply.png'
+        super(Supply, self).__init__(image_name, 5, *group)
+
+        self.kind = kind  # 道具类型
+        self.wav_name = 'get_bomb.wav' if kind == 0 else 'get_bullet.wav'
+
+        self.rect.top = SCREEN_RECT.h  # 道具的初始位置
+
+    def update(self, *args):
+        # 如果已经移动到了屏幕外，不需要再移动
+        if self.rect.y > SCREEN_RECT.h:
+            return
+        super(Supply, self).update(*args)
+
+    def throw_supply(self):
+        self.rect.bottom = 0
+        self.rect.x = random.randint(0, SCREEN_RECT.w - self.rect.w)
+
+    def reset(self):
+        self.rect.top = SCREEN_RECT.h  # 道具的初始位置

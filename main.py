@@ -10,6 +10,7 @@ class Game(object):
     def __init__(self):
         # 游戏窗口
         self.main_window = pygame.display.set_mode(SCREEN_RECT.size)
+        pygame.display.set_caption("飞机大战")
         # 游戏状态
         self.is_game_over = False
         self.is_game_pause = False
@@ -31,7 +32,11 @@ class Game(object):
         # 初始化敌机
         self.create_enemies()
 
+        # 初始化道具
+        self.create_supply()
         # 音乐播放
+        self.player = MusicPlayer('game_music.ogg')
+        self.player.play_music()
 
     def rest_game(self):
         # 重置游戏数据
@@ -39,6 +44,17 @@ class Game(object):
         self.is_game_pause = False
 
         self.hud_panel.reset_panel()
+
+        # 重新玩游戏的时候，英雄飞机位置要放到初始位置
+        self.myplane.rect.midbottom = HERO_DEFAULT_POSITION
+
+        # 销毁所有敌人飞机
+        for enemy in self.enemies_group:
+            enemy.kill()
+        # 销毁所有的子弹
+        for bullet in self.myplane.bullets_groups:
+            bullet.kill()
+        self.create_enemies()
 
     def start(self):
         # 创建时钟
@@ -64,7 +80,6 @@ class Game(object):
                 self.hud_panel.panel_paused(True, self.all_group)
             elif self.is_game_pause:
                 self.hud_panel.panel_paused(False, self.all_group)
-                print("游戏已经暂停")
             else:
                 # 隐藏提示信息，暂停按钮恢复
                 self.hud_panel.panel_resume(self.all_group)
@@ -101,10 +116,14 @@ class Game(object):
                 else:
                     # 游戏还没有结束，切换成暂停状态
                     self.is_game_pause = not self.is_game_pause
+                    self.player.pause_music(self.is_game_pause)
+
             # 必须在游戏没有结束并且没有暂停的时候才可以按 B键
             if not self.is_game_over and not self.is_game_pause:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_b:
                     # 减少一个炸弹
+                    if self.myplane.hp>0 and self.myplane.bomb_count>0:
+                        self.player.play_sound("use_bomb.wav")
                     score = self.myplane.boom(self.enemies_group)
                     self.hud_panel.change_bomb(self.myplane.bomb_count)
                     # 更新得分,如果最新得分应该升级，增加敌机数量
@@ -113,12 +132,26 @@ class Game(object):
 
                 # 触发用户自定义事件
                 elif event.type == HERO_DEAD_EVENT:
-                    #玩家飞机死亡
-                    self.hud_panel.lives_count -=1
+                    # 玩家飞机死亡
+                    self.hud_panel.lives_count -= 1
                     self.hud_panel.change_lives()
                     self.hud_panel.change_bomb(self.myplane.bomb_count)
                 # 触发无敌事件
-
+                elif event.type == HERO_ISPOWER_EVENT:
+                    self.myplane.is_power = False
+                    pygame.time.set_timer(HERO_ISPOWER_EVENT, 0)
+                elif event.type == THROW_SUPPORT_EVENT:
+                    # 随即给出一个道具
+                    self.player.play_sound("supply.wav")
+                    supply = random.choice(self.supplies_group.sprites())
+                    supply.throw_supply()
+                elif event.type == BULLET_ENAHCE_EVENT:
+                    # 双排时间已过，恢复子弹
+                    self.myplane.bullets_kind = 0
+                    pygame.time.set_timer(BULLET_ENAHCE_EVENT, 0)
+                elif event.type == HERO_FIRE_EVENT:
+                    #self.player.play_sound("bullet.wav")
+                    self.myplane.fire(self.all_group)
         return False
 
     def create_enemies(self):
@@ -164,7 +197,54 @@ class Game(object):
             i.hp = 0
         # 销毁玩家飞机
         if collide_list:
+            self.player.play_sound(self.myplane.wav_name)
             self.myplane.hp = 0
+
+        # 子弹和敌军的碰撞分析
+        hit_enemies = pygame.sprite.groupcollide(self.enemies_group, self.myplane.bullets_groups,
+                                                 False, False, pygame.sprite.collide_mask)
+
+        for enemy in hit_enemies:
+            if enemy.hp <= 0:
+                continue
+            for bullet in hit_enemies[enemy]:
+                bullet.kill()  # 销毁子弹
+                enemy.hp -= bullet.damage
+
+                if enemy.hp > 0:  # 如果敌军没被摧毁，继续遍历后面的击中子弹
+                    continue
+                # 敌军已经被摧毁
+                if self.hud_panel.increase_score(enemy.value):
+                    # 升级音效
+                    self.player.play_sound("upgrade.wav")
+                    self.create_enemies()
+                self.player.play_sound(enemy.wav_name)
+                break
+
+        supplies = pygame.sprite.spritecollide(self.myplane, self.supplies_group,
+                                               False, pygame.sprite.collide_mask)
+        # 道具碰撞了就回初始位置
+        for i in supplies:
+            i.reset()
+        print(len(supplies))
+        if supplies:
+            # 屏幕只能存在一个道具，但是返回的碰撞数组是个list,所有取第一个即可
+            supply = supplies[0]
+            self.player.play_sound(supply.wav_name)
+            # 根据不同的道具产生不同的效果
+            if supply.kind == 0:
+                self.myplane.bomb_count += 1
+                self.hud_panel.change_bomb(self.myplane.bomb_count)
+            else:
+                self.myplane.bullets_kind = 1
+                # 15s后子弹恢复
+                pygame.time.set_timer(BULLET_ENAHCE_EVENT, 12000)
+
+    def create_supply(self):
+        # 初始化两个道具，并且开启定时器
+        Supply(0, self.all_group, self.supplies_group)
+        Supply(1, self.all_group, self.supplies_group)
+        pygame.time.set_timer(THROW_SUPPORT_EVENT, 15000)
 
 
 if __name__ == '__main__':
