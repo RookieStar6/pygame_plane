@@ -4,6 +4,7 @@ from game_items import *
 from game_music import *
 import random
 
+
 class Game(object):
 
     def __init__(self):
@@ -20,17 +21,67 @@ class Game(object):
         # Background(False, self.all_group)  # 背景精灵1
         # Background(True, self.all_group)  # 背景精灵2
         self.all_group.add(Background(False), Background(True))  # 添加两个精灵
-        myplane = GameSprite('me1.png', 0, self.all_group)
-        myplane.rect.center = SCREEN_RECT.center
+        # myplane = Plane(("me1.png","me2.png"),  self.all_group)
+        self.myplane = Hero(self.all_group)
 
         # 创建游戏控制面板
         self.hud_panel = HUDpanel(self.all_group)
+        # 把原来面板上炸弹的数量关联到飞机上
+        self.hud_panel.change_bomb(self.myplane.bomb_count)
+        # 初始化敌机
+        self.create_enemies()
         # 音乐播放
 
     def rest_game(self):
         # 重置游戏数据
         self.is_game_over = False
         self.is_game_pause = False
+
+        self.hud_panel.reset_panel()
+
+    def start(self):
+        # 创建时钟
+        clock = pygame.time.Clock()
+
+        # 动画帧计数器
+        frame_count = 0
+
+        while True:
+            # 处理事件监听
+            if self.hud_panel.lives_count == 0:
+                self.is_game_over = True
+            if self.evevnt_handler():
+                # event_handle返回了True,则说明发生了退出事件
+
+                # 退出游戏之前要保存最好成绩
+                self.hud_panel.save_best_score()
+                return
+            # 根据游戏状态切换界面显示内容
+            if self.is_game_over:
+                print("游戏已经结束")
+                # 显示面板中央的一些提示信息， 暂停和结束 有不同的提示
+                self.hud_panel.panel_paused(True, self.all_group)
+            elif self.is_game_pause:
+                self.hud_panel.panel_paused(False, self.all_group)
+                print("游戏已经暂停")
+            else:
+                # 隐藏提示信息，暂停按钮恢复
+                self.hud_panel.panel_resume(self.all_group)
+                # 游戏进行中，处理键盘长按事件
+                keys = pygame.key.get_pressed()  # 得到一个元组，全部为0，按一个就变成1，下边对应的就是键盘事件
+                # 键盘移动基数
+                move_hor = keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]
+                move_ver = keys[pygame.K_DOWN] - keys[pygame.K_UP]
+                # 12%10=2  102%10=2 ,所以frame_count 的范围只有在0-10.FPS=60 一秒frame_count就会加到60.但是%10,只会刷新6次
+                frame_count = (frame_count + 1) % FRAME_INTERVAL
+                # 精灵组重写的update方法
+                self.all_group.update(frame_count == 0, move_hor, move_ver)
+            # 绘制内容
+            self.all_group.draw(self.main_window)
+            # 刷新界面
+            pygame.display.update()
+            # 设置FPS`
+            clock.tick(60)
 
     def evevnt_handler(self):
         # 获取并处理事件
@@ -48,38 +99,45 @@ class Game(object):
                     # 游戏还没有结束，切换成暂停状态
                     self.is_game_pause = not self.is_game_pause
             # 必须在游戏没有结束并且没有暂停的时候才可以按 B键
-            if not self.is_game_over and not self.is_game_pause :
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_b :
-                    self.hud_panel.change_bomb(random.randint(1,100))
-                    # 测试生命值
-                    self.hud_panel.lives_count=random.randint(1,50)
-                    self.hud_panel.change_lives()
+            if not self.is_game_over and not self.is_game_pause:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_b:
+                    # 减少一个炸弹
+                    score = self.myplane.boom(self.enemies_group)
+                    self.hud_panel.change_bomb(self.myplane.bomb_count)
+                    # 更新得分,如果最新得分应该升级，增加敌机数量
+                    if self.hud_panel.increase_score(score):
+                        self.create_enemies()
+
         return False
 
-    def start(self):
-        # 创建时钟
-        clock = pygame.time.Clock()
-        while True:
-            # 处理事件监听
-            if self.evevnt_handler():
-                # event_handle返回了True,则说明发生了退出事件
-                return
-            # 根据游戏状态切换界面显示内容
-            if self.is_game_over:
-                print("游戏已经结束")
-            if self.is_game_pause:
-                print("游戏已经暂停")
-            else:
-                print("游戏进行中")
-                # 精灵组重写的update方法
-                self.all_group.update()
+    def create_enemies(self):
+        # 创建敌机
+        count = len(self.enemies_group.sprites())
+        group = (self.all_group, self.enemies_group)
 
-            # 绘制内容
-            self.all_group.draw(self.main_window)
-            # 刷新界面
-            pygame.display.update()
-            # 设置FPS
-            clock.tick(60)
+        # 根据不同的关卡创建不同数量的敌机
+        if self.hud_panel.level == 1 and count == 0:
+            # 关卡1
+            for i in range(0, 16):
+                Enemy(0, 3, *group)
+        elif self.hud_panel.level == 2 and count == 16:
+            # 关卡2
+            for enemy in self.enemies_group.sprites():
+                enemy.max_speed = 5
+
+            for i in range(8):
+                Enemy(0, 5, *group)
+            for i in range(2):
+                Enemy(1, 1, *group)
+        elif self.hud_panel.level == 3 and count == 26:
+            for enemy in self.enemies_group.sprites():
+                enemy.max_speed = 7 if enemy.kind == 0 else 3
+            for i in range(8):
+                Enemy(0, 7, *group)
+            for i in range(2):
+                Enemy(1, 3, *group)
+            for i in range(2):
+                Enemy(2, 1, *group)
 
 
 if __name__ == '__main__':
