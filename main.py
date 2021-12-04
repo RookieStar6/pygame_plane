@@ -3,14 +3,21 @@ from game_hud import *
 from game_items import *
 from game_music import *
 import random
-
+import time
 
 class Game(object):
 
     def __init__(self):
+        print("-----游戏开始---")
+        print()
+        print("-----15秒释放一次道具---")
+        print()
+        print()
+        print("               按   B  键 引爆炸弹   !!! ")
+        print("               死亡后三秒无敌")
         # 游戏窗口
         self.main_window = pygame.display.set_mode(SCREEN_RECT.size)
-        pygame.display.set_caption("飞机大战")
+        pygame.display.set_caption("飞机大战 -by yilin ")
         # 游戏状态
         self.is_game_over = False
         self.is_game_pause = False
@@ -37,7 +44,6 @@ class Game(object):
         # 音乐播放
         self.player = MusicPlayer('game_music.ogg')
         self.player.play_music()
-
     def rest_game(self):
         # 重置游戏数据
         self.is_game_over = False
@@ -75,7 +81,6 @@ class Game(object):
                 return
             # 根据游戏状态切换界面显示内容
             if self.is_game_over:
-                print("游戏已经结束")
                 # 显示面板中央的一些提示信息， 暂停和结束 有不同的提示
                 self.hud_panel.panel_paused(True, self.all_group)
             elif self.is_game_pause:
@@ -122,7 +127,7 @@ class Game(object):
             if not self.is_game_over and not self.is_game_pause:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_b:
                     # 减少一个炸弹
-                    if self.myplane.hp>0 and self.myplane.bomb_count>0:
+                    if self.myplane.hp > 0 and self.myplane.bomb_count > 0:
                         self.player.play_sound("use_bomb.wav")
                     score = self.myplane.boom(self.enemies_group)
                     self.hud_panel.change_bomb(self.myplane.bomb_count)
@@ -150,7 +155,7 @@ class Game(object):
                     self.myplane.bullets_kind = 0
                     pygame.time.set_timer(BULLET_ENAHCE_EVENT, 0)
                 elif event.type == HERO_FIRE_EVENT:
-                    #self.player.play_sound("bullet.wav")
+                    # self.player.play_sound("bullet.wav")
                     self.myplane.fire(self.all_group)
         return False
 
@@ -226,16 +231,17 @@ class Game(object):
         # 道具碰撞了就回初始位置
         for i in supplies:
             i.reset()
-        print(len(supplies))
         if supplies:
             # 屏幕只能存在一个道具，但是返回的碰撞数组是个list,所有取第一个即可
             supply = supplies[0]
             self.player.play_sound(supply.wav_name)
             # 根据不同的道具产生不同的效果
             if supply.kind == 0:
+                print("拾取道具成功！ 炸药包+1")
                 self.myplane.bomb_count += 1
                 self.hud_panel.change_bomb(self.myplane.bomb_count)
             else:
+                print("拾取道具成功！ 子弹升级")
                 self.myplane.bullets_kind = 1
                 # 15s后子弹恢复
                 pygame.time.set_timer(BULLET_ENAHCE_EVENT, 12000)

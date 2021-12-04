@@ -23,7 +23,9 @@ HERO_FIRE_EVENT = pygame.USEREVENT + 2
 THROW_SUPPORT_EVENT = pygame.USEREVENT + 3
 
 # 双排道具事件
-BULLET_ENAHCE_EVENT =pygame.USEREVENT +4
+BULLET_ENAHCE_EVENT = pygame.USEREVENT + 4
+
+
 class GameSprite(pygame.sprite.Sprite):
     image_path = './resource/demo_images/'
 
@@ -273,6 +275,7 @@ class Hero(Plane):
             #     bullet2 = Bullet(self.bullets_kind, *groups)
             #     bullet2.rect.midbottom = (self.rect.centerx + 20, y)
             bullet1.rect.midbottom = (self.rect.centerx, y)
+
 
 class Bullet(GameSprite):
     def __init__(self, kind, *group):

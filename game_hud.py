@@ -76,6 +76,7 @@ class HUDpanel(object):
         self.lives_sprite.rect.right = self.live_label.rect.x - self.margin
 
     def increase_score(self, enemy_score):
+        global level_2
         is_update = False
         # 计算最新得分
         score = self.score + enemy_score
@@ -98,6 +99,7 @@ class HUDpanel(object):
             level = 3
         if self.level != level:
             is_update = True
+            print("已升级----，当前关卡 :",level)
         self.level = level
 
         # 更新得分的精灵显示内容
