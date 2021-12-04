@@ -8,16 +8,9 @@ import time
 class Game(object):
 
     def __init__(self):
-        print("-----游戏开始---")
-        print()
-        print("-----15秒释放一次道具---")
-        print()
-        print()
-        print("               按   B  键 引爆炸弹   !!! ")
-        print("               死亡后三秒无敌")
         # 游戏窗口
         self.main_window = pygame.display.set_mode(SCREEN_RECT.size)
-        pygame.display.set_caption("飞机大战 -by yilin ")
+        pygame.display.set_caption("飞机大战 ")
         # 游戏状态
         self.is_game_over = False
         self.is_game_pause = False
