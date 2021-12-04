@@ -15,15 +15,17 @@ class Game(object):
         self.is_game_over = False
         self.is_game_pause = False
         # 精灵组
+        self.myplane_group = pygame.sprite.Group() #玩家组
         self.all_group = pygame.sprite.Group()  # 全部组
         self.enemies_group = pygame.sprite.Group()  # 敌军组
         self.supplies_group = pygame.sprite.Group()  # 道具组
+        self.boss_group = pygame.sprite.Group() #boss组
         # 游戏精灵
         # Background(False, self.all_group)  # 背景精灵1
         # Background(True, self.all_group)  # 背景精灵2
         self.all_group.add(Background(False), Background(True))  # 添加两个精灵
         # myplane = Plane(("me1.png","me2.png"),  self.all_group)
-        self.myplane = Hero(self.all_group)
+        self.myplane = Hero(self.all_group, self.myplane_group)
 
         # 创建游戏控制面板
         self.hud_panel = HUDpanel(self.all_group)
@@ -31,7 +33,8 @@ class Game(object):
         self.hud_panel.change_bomb(self.myplane.bomb_count)
         # 初始化敌机
         self.create_enemies()
-
+        #初始化boss
+        self.boss = Boss(1, 10000, 1, self.boss_group, self.all_group)
         # 初始化道具
         self.create_supply()
         # 音乐播放
@@ -94,6 +97,9 @@ class Game(object):
                 self.check_collide()
                 # 精灵组重写的update方法
                 self.all_group.update(frame_count == 0, move_hor, move_ver)
+
+
+
             # 绘制内容
             self.all_group.draw(self.main_window)
             # 刷新界面
@@ -128,7 +134,13 @@ class Game(object):
                     self.hud_panel.change_bomb(self.myplane.bomb_count)
                     # 更新得分,如果最新得分应该升级，增加敌机数量
                     if self.hud_panel.increase_score(score):
-                        self.create_enemies()
+                        # self.create_enemies()
+                        self.myplane.boom(self.enemies_group)
+                        # self.enemies_group.empty()
+                        # self.create_boss()
+
+
+
 
                 # 触发用户自定义事件
                 elif event.type == HERO_DEAD_EVENT:
@@ -152,6 +164,10 @@ class Game(object):
                 elif event.type == HERO_FIRE_EVENT:
                     #self.player.play_sound("bullet.wav")
                     self.myplane.fire(self.all_group)
+                    self.boss.fire(self.all_group)
+                elif event.type == BOSS_EVENT:
+                    pass
+
         return False
 
     def create_enemies(self):
@@ -162,8 +178,10 @@ class Game(object):
         # 根据不同的关卡创建不同数量的敌机
         if self.hud_panel.level == 1 and count == 0:
             # 关卡1
-            for i in range(0, 16):
+            for i in range(0, 0):
                 Enemy(0, 3, *group)
+            # Boss(1, 100, 1, *group)
+
         elif self.hud_panel.level == 2 and count == 16:
             # 关卡2
             for enemy in self.enemies_group.sprites():
@@ -183,6 +201,13 @@ class Game(object):
             for i in range(2):
                 Enemy(2, 1, *group)
 
+    def create_boss(self):
+
+        group = (self.all_group, self.boss_group)
+        if self.hud_panel.level >= 1 :
+            # 关卡1
+            Boss(1, 100, 1, *group)
+
     def check_collide(self):
         # 先检查是否无敌
         if self.myplane.is_power:
@@ -200,16 +225,36 @@ class Game(object):
             self.player.play_sound(self.myplane.wav_name)
             self.myplane.hp = 0
 
-        # 子弹和敌军的碰撞分析
+        # 玩家子弹和敌军的碰撞分析
         hit_enemies = pygame.sprite.groupcollide(self.enemies_group, self.myplane.bullets_groups,
                                                  False, False, pygame.sprite.collide_mask)
+        #玩家子弹和boss碰撞
+        hit_boss = pygame.sprite.groupcollide(self.boss_group, self.myplane.bullets_groups,
+                                                 False, False, pygame.sprite.collide_mask)
+        #boss子弹和玩家碰撞
+        hit_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss.bullets_groups,
+                                              False, False, pygame.sprite.collide_mask)
+
+
+        for hero in hit_hero:
+            if hero.hp > 0:
+                for bullet in self.boss.bullets_groups:
+                    hero.hp -= bullet.damage
+
+
+        for boss in hit_boss:
+            if boss.hp > 0:
+                for bullet in self.myplane.bullets_groups:
+                    boss.hp -= bullet.damage
 
         for enemy in hit_enemies:
             if enemy.hp <= 0:
                 continue
+
             for bullet in hit_enemies[enemy]:
                 bullet.kill()  # 销毁子弹
                 enemy.hp -= bullet.damage
+                hit_boss[0].hp -= bullet.damage
 
                 if enemy.hp > 0:  # 如果敌军没被摧毁，继续遍历后面的击中子弹
                     continue
@@ -226,7 +271,7 @@ class Game(object):
         # 道具碰撞了就回初始位置
         for i in supplies:
             i.reset()
-        print(len(supplies))
+
         if supplies:
             # 屏幕只能存在一个道具，但是返回的碰撞数组是个list,所有取第一个即可
             supply = supplies[0]
