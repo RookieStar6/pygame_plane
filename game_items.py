@@ -28,6 +28,9 @@ BULLET_ENAHCE_EVENT =pygame.USEREVENT +4
 #boss
 BOSS_EVENT = pygame.USEREVENT + 5
 
+#敌人子弹事件
+ENEMY_FIRE_EVENT = pygame.USEREVENT + 6
+
 
 class GameSprite(pygame.sprite.Sprite):
     image_path = './resource/demo_images/'
@@ -185,28 +188,34 @@ class Enemy(Plane):
     def __init__(self, kind, max_speed, *group):
         self.kind = kind
         self.max_speed = max_speed
-
+        self.bullets_groups = pygame.sprite.Group()  # 子弹精灵类
         if kind == 0:
             # 小敌机
             super(Enemy, self).__init__(
-                ['enemy1.png'], 1, 1, 1000, 'enemy1_down.wav', ['enemy1.png'],
-                ['enemy1_down%d.png' % x for x in range(1, 5)],
+                ['enemy1.png', 'enemy2.png'], 1, 1, 1000, 'enemy1_down.wav', ['enemy1.png', 'enemy2.png'],
+                ['plane_destroy%d.png' % x for x in range(1, 6)],
                 *group
             )
         elif kind == 1:
             # 中敌机
             super(Enemy, self).__init__(
-                ['enemy2.png'], 1, 6, 6000, 'enemy2_down.wav', ['enemy2_hit.png'],
-                ['enemy2_down%d.png' % x for x in range(1, 5)],
+                ['tallenemy1.png', 'tallenemy2.png'], 1, 6, 6000, 'enemy2_down.wav', ['tallenemy1.png', 'tallenemy2.png'],
+                ['plane_destroy%d.png' % x for x in range(1, 6)],
                 *group
             )
         elif kind == 2:
             # 大敌机
             super(Enemy, self).__init__(
-                ['enemy3_n1.png', 'enemy3_n2.png'], 1, 15, 15000, 'enemy3_down.wav', ['enemy3_hit.png'],
-                ['enemy3_down%d.png' % x for x in range(1, 7)],
+                ['ventienemy1.png', 'ventienemy2.png'], 1, 15, 15000, 'enemy3_down.wav', ['ventienemy1.png', 'ventienemy2.png'],
+                ['plane_destroy%d.png' % x for x in range(1, 6)],
                 *group
             )
+        if self.kind == 0:
+            pygame.time.set_timer(ENEMY_FIRE_EVENT, 1300)
+        elif self.kind == 1:
+            pygame.time.set_timer(ENEMY_FIRE_EVENT, 1600)
+        elif self.kind == 2:
+            pygame.time.set_timer(ENEMY_FIRE_EVENT, 2000)
         self.reset_plane()
 
     def reset_plane(self):
@@ -232,16 +241,26 @@ class Enemy(Plane):
         if self.rect.y >= SCREEN_RECT.h:
             self.reset_plane()
 
+    def fire(self, display_groups):
+        # 准备要显示的组
+        groups = (display_groups, self.bullets_groups)
+        # 创建子弹并且确定位置
+        for i in range(1):
+            bullet1 = EnemyBullet(self.kind, 1, *groups)
+            y = self.rect.y + self.rect.h
+            bullet1.rect.midbottom = (self.rect.centerx, y)
+
+
 
 class Hero(Plane):
     def __init__(self, *groups):
         # 初始化英雄飞机
         self.is_power = False  # 是否无敌
         self.bomb_count = HERO_BOMB_COUNT
-        self.bullets_kind = 0  # 子弹类型
+        self.bullets_kind = 9  # 子弹类型
         self.bullets_groups = pygame.sprite.Group()  # 子弹精灵类
         super(Hero, self).__init__(["player%d.png" % i for i in range(1, 3)],
-                                   0, 180, 0, "me_down.wav", ["me1.png"],
+                                   0, 180, 0, "me_down.wav", ["player%d.png" % i for i in range(1, 3)],
                                    ["plane_destroy%d.png" % x for x in range(1, 6)],
                                    *groups)
 
@@ -284,7 +303,7 @@ class Hero(Plane):
         # 重写自己的方法
         self.is_power = True
         self.bomb_count = HERO_BOMB_COUNT
-        self.bullets_kind = 0
+        self.bullets_kind = 9
 
         # 数据重置完后，发布事件.
         pygame.event.post(pygame.event.Event(HERO_DEAD_EVENT))
@@ -331,6 +350,10 @@ class Bullet(GameSprite):
             image_name = "bullet9.png"
         elif kind == 8:
             image_name = "bullet10.png"
+        elif kind == 9:
+            image_name = "bullet12.png"
+        elif kind == 10:
+            image_name = "buttet13.png"
 
         super(Bullet, self).__init__(image_name, -12, *group)
 
@@ -343,6 +366,15 @@ class Bullet(GameSprite):
         # 飞出屏幕之外的子弹销毁
         if self.rect.bottom < 0:
             self.kill()
+
+
+class EnemyBullet(Bullet):
+    def __init__(self, kind, damage, *groups):
+        super(EnemyBullet, self).__init__(kind, *groups)
+        self.damage = damage
+
+    def update(self, *args):
+        self.rect.y -= 0.5 * self.speed
 
 class Boss1(Plane):
 

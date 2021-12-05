@@ -34,7 +34,7 @@ class Game(object):
         # 初始化敌机
         self.create_enemies()
         #初始化boss
-        self.boss = Boss1(100, 1, self.boss_group, self.all_group)
+        # self.boss = Boss1(100, 1, self.boss_group, self.all_group)
         # self.boss = Boss2(1000, 1, self.boss_group, self.all_group)
         # 初始化道具
         self.create_supply()
@@ -135,8 +135,8 @@ class Game(object):
                     self.hud_panel.change_bomb(self.myplane.bomb_count)
                     # 更新得分,如果最新得分应该升级，增加敌机数量
                     if self.hud_panel.increase_score(score):
-                        # self.create_enemies()
-                        self.myplane.boom(self.enemies_group)
+                        self.create_enemies()
+
                         # self.enemies_group.empty()
                         # self.create_boss()
 
@@ -165,7 +165,10 @@ class Game(object):
                 elif event.type == HERO_FIRE_EVENT:
                     #self.player.play_sound("bullet.wav")
                     self.myplane.fire(self.all_group)
-                    self.boss.fire(self.all_group)
+                    # self.boss.fire(self.all_group)
+                elif event.type == ENEMY_FIRE_EVENT:
+                    for enemy in self.enemies_group:
+                        enemy.fire(self.all_group)
                 elif event.type == BOSS_EVENT:
                     pass
 
@@ -175,15 +178,18 @@ class Game(object):
         # 创建敌机
         count = len(self.enemies_group.sprites())
         group = (self.all_group, self.enemies_group)
-
+        print(count)
         # 根据不同的关卡创建不同数量的敌机
         if self.hud_panel.level == 1 and count == 0:
             # 关卡1
-            for i in range(0, 0):
+            for i in range(0, 8):
                 Enemy(0, 3, *group)
+            for i in range(3):
+                Enemy(1, 1, *group)
             # Boss(1, 100, 1, *group)
 
-        elif self.hud_panel.level == 2 and count == 16:
+
+        elif self.hud_panel.level == 2 and count == 11:
             # 关卡2
             for enemy in self.enemies_group.sprites():
                 enemy.max_speed = 5
@@ -192,6 +198,9 @@ class Game(object):
                 Enemy(0, 5, *group)
             for i in range(2):
                 Enemy(1, 1, *group)
+            for i in range(2):
+                Enemy(2, 1, *group)
+
         elif self.hud_panel.level == 3 and count == 26:
             for enemy in self.enemies_group.sprites():
                 enemy.max_speed = 7 if enemy.kind == 0 else 3
@@ -232,15 +241,25 @@ class Game(object):
         #玩家子弹和boss碰撞
         hit_boss = pygame.sprite.groupcollide(self.boss_group, self.myplane.bullets_groups,
                                                  False, False, pygame.sprite.collide_mask)
+
+        #enemy子弹和玩家碰撞
+        for enemy in self.enemies_group:
+            hitted_hero = pygame.sprite.groupcollide(self.myplane_group, enemy.bullets_groups,
+                                                 False, False, pygame.sprite.collide_mask)
+            for hero in hitted_hero:
+                if hero.hp > 0:
+                    for bullet in enemy.bullets_groups:
+                        hero.hp -= bullet.damage
+
         #boss子弹和玩家碰撞
-        hit_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss.bullets_groups,
-                                              False, False, pygame.sprite.collide_mask)
+        # hit_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss.bullets_groups,
+        #                                       False, False, pygame.sprite.collide_mask)
 
 
-        for hero in hit_hero:
-            if hero.hp > 0:
-                for bullet in self.boss.bullets_groups:
-                    hero.hp -= bullet.damage
+        # for hero in hit_hero:
+        #     if hero.hp > 0:
+        #         for bullet in self.boss.bullets_groups:
+        #             hero.hp -= bullet.damage
                     #boss子弹不需要删除
 
 
@@ -285,7 +304,7 @@ class Game(object):
                 self.myplane.bomb_count += 1
                 self.hud_panel.change_bomb(self.myplane.bomb_count)
             else:
-                self.myplane.bullets_kind = 1
+                self.myplane.bullets_kind = 10
                 # 15s后子弹恢复
                 pygame.time.set_timer(BULLET_ENAHCE_EVENT, 12000)
 
