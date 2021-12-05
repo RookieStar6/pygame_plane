@@ -56,7 +56,7 @@ class GameSprite(pygame.sprite.Sprite):
 class Background(GameSprite):
     def __init__(self, flag, *group):
         # 如果flag是True,显示在窗口内部，反之外部
-        super(Background, self).__init__('bg1.jpg', 1, *group)
+        super(Background, self).__init__('bg2.jpg', 1, *group)
         if flag:
             self.rect.y = -self.rect.h
 
@@ -103,7 +103,9 @@ class Label(pygame.sprite.Sprite):
 
 
 class Plane(GameSprite):
-    def __init__(self, normal_names, speed, hp, value, wav_name, hurt_image_name, destroy_names, *groups):
+    def __init__(self, normal_names, speed, hp, value, wav_name, hurt_image_name, destroy_names, *groups, scale_imagename = '',scale = 1):
+        #scale_imagename: 需要做缩放的图片代号n-normal_images, h-hurt_images, d-destroy_images
+        #scale: 缩放比例
         # 飞机类的初始化
         super(Plane, self).__init__(normal_names[0], speed, *groups)
         # 飞机基本属性
@@ -112,15 +114,35 @@ class Plane(GameSprite):
         self.value = value  # 分值
         self.wav_name = wav_name  # 音效名称
 
+
         # 飞机要显示的图片
         self.normal_images = [pygame.image.load(self.image_path + name) for name in normal_names]
         self.normal_index = 0
+
         # 受伤的图片路径
         self.hurt_images = [pygame.image.load(self.image_path + hurt_image_name) for hurt_image_name in hurt_image_name]
         self.hurt_index = 0
         # 销毁的图片列表
         self.destroy_images = [pygame.image.load(self.image_path + name) for name in destroy_names]
         self.destroy_index = 0
+
+        if scale_imagename == 'n':
+            for i in range(len(self.normal_images)):
+                rect = self.normal_images[i].get_rect()
+                self.normal_images[i] = pygame.transform.scale(self.normal_images[i],
+                                                             (int(rect.width * scale), int(rect.h * scale)))
+        elif scale_imagename == 'h':
+            for i in range(len(self.hurt_images)):
+                rect = self.hurt_images[i].get_rect()
+                self.hurt_images[i] = pygame.transform.scale(self.hurt_images[i],
+                                                      (int(rect.width * scale), int(rect.h * scale)))
+        elif scale_imagename == 'd':
+            for i in range(len(self.destroy_images)):
+                rect = self.destroy_images[i].get_rect()
+                self.destroy_images[i] = pygame.transform.scale(self.destroy_images[i],
+                                                             (int(rect.width * scale), int(rect.h * scale)))
+
+
 
     def reset_plane(self):
         # 重置飞机
@@ -306,7 +328,10 @@ class Bullet(GameSprite):
         elif kind == 6:
             image_name = "bullet8.png"
         elif kind == 7:
-            pass
+            image_name = "bullet9.png"
+        elif kind == 8:
+            image_name = "bullet10.png"
+
         super(Bullet, self).__init__(image_name, -12, *group)
 
         self.damage = 1
@@ -319,33 +344,24 @@ class Bullet(GameSprite):
         if self.rect.bottom < 0:
             self.kill()
 
-class Boss(Plane):
+class Boss1(Plane):
 
-    def __init__(self, level, max_hp, max_speed, *group):
+    def __init__(self, max_hp, max_speed, *group):
         self.value = 50000
         self.bullets_groups = pygame.sprite.Group()
-        #level设为关卡
-        if level == 1:
-            super(Boss, self).__init__(
-                ['boss2/boss%d.png'% x for x in range(1, 6)],
-                1, max_hp, 10000, 'enemy1_down.wav', ['boss2/boss%d.png'% x for x in range(1, 6)],
-                ['plane_destroy%d.png'% x for x in range(1, 6)],
-                *group)
-        elif level == 2:
-            pass
-        elif level == 3:
-            pass
-        elif level == 4:
-            pass
-        else:
-            pass
+        super(Boss1, self).__init__(
+            ['boss1/boss%d.png'% x for x in range(1, 6)],
+            1, max_hp, self.value, 'enemy1_down.wav', ['boss1/boss%d.png'% x for x in range(1, 6)],
+            ['boss1/boss_destroy%d.png'% x for x in range(1, 5)],
+            *group, scale_imagename='d', scale=0.22)
+
 
         #boss出生位置，然后移动至屏幕内
         self.rect.centerx = SCREEN_RECT.centerx
         self.rect.y = -self.rect.h
 
     def update(self, *args):
-        super(Boss, self).update(*args)
+        super(Boss1, self).update(*args)
         hp_percentage = self.hp / self.max_hp  # 血量百分比
         #boss入场
         if self.rect.y <= 20:
@@ -401,6 +417,94 @@ class Boss(Plane):
             y = self.rect.y + self.rect.h
             boss_bullet5.rect.midbottom = (self.rect.centerx, y)
 
+class Boss2(Plane):
+    def __init__(self, max_hp, max_speed, *group):
+        self.value = 80000
+        self.bullets_groups = pygame.sprite.Group()
+        super(Boss2, self).__init__(
+            ['boss2/boss%d.png' % x for x in range(1, 6)],
+            1, max_hp, 10000, 'enemy1_down.wav', ['boss2/boss%d.png' % x for x in range(1, 6)],
+            ['plane_destroy%d.png' % x for x in range(1, 6)],
+            *group)
+
+        # boss出生位置，然后移动至屏幕内
+        self.rect.centerx = SCREEN_RECT.centerx
+        self.rect.y = -self.rect.h
+
+    def update(self, *args):
+        super(Boss2, self).update(*args)
+        hp_percentage = self.hp / self.max_hp  # 血量百分比
+        # boss入场
+        if self.rect.y <= 20:
+            self.rect.y += 1
+        # boss在不同血量情形下，移动至不同位置
+        if hp_percentage >= 0.9 and hp_percentage <= 1:
+            if self.rect.x <= SCREEN_RECT.right - self.rect.x - 20:
+                self.rect.x += 1
+                # self.rect.x += 0.5
+
+        elif hp_percentage >= 0.8 and hp_percentage <= 0.9:
+            if self.rect.x >= 0:
+                self.rect.x -= 1
+                self.rect.y += 1
+
+        elif hp_percentage >= 0.6 and hp_percentage < 0.8:
+            if self.rect.centerx <= SCREEN_RECT.centerx:
+                self.rect.x += 1
+            if self.rect.y >= 20:
+                self.rect.y -= 1
+
+        elif hp_percentage >= 0.4 and hp_percentage<= 0.6:
+            if self.rect.y >= 20 and self.rect.y <= SCREEN_RECT.h / 2 - self.rect.h / 2: #屏幕居中位置
+                self.rect.y += 1
+
+    def fire(self, display_groups):
+
+        groups = (display_groups, self.bullets_groups)
+        hp_percentage = self.hp / self.max_hp  # 血量百分比
+        print(hp_percentage)
+        if (hp_percentage > 0.9 and hp_percentage <= 1):
+            # 第一种攻击模式
+            for i in range(5):
+                boss_bullet1 = BossBullet(7, 0, *groups)
+                y = self.rect.y + self.rect.h / 2 + 20
+                boss_bullet1.rect.midbottom = (self.rect.centerx - 120 + 10 * i, y - 5 * i)
+
+                boss_bullet2 = BossBullet(7, 0, *groups)
+                boss_bullet2.rect.midbottom = (self.rect.centerx + 120 - 10 * i, y - 5 * i)
+            #laser
+            boss_bullet3 = BossBullet(8, 0, *groups)
+            boss_bullet3.rect.midbottom = (30, y + self.rect.h + 500)
+        elif hp_percentage > 0.6 and hp_percentage <= 0.9:
+            for i in range(8):
+                boss_bullet1 = BossBullet(4, i, *groups)
+                y = self.rect.y + self.rect.h / 2 + 20
+                boss_bullet1.rect.midbottom = (self.rect.centerx, y)
+
+        elif hp_percentage > 0.3 and hp_percentage <= 0.6:
+            for i in range(8):
+                boss_bullet1 = BossBullet(3, i, *groups)
+                y = self.rect.y + self.rect.h / 2 + 20
+                boss_bullet1.rect.midbottom = (self.rect.centerx, y)
+        else:
+            for i in range(5):
+                boss_bullet1 = BossBullet(7, 0, *groups)
+                y = self.rect.y + self.rect.h / 2 + 20
+                boss_bullet1.rect.midbottom = (self.rect.centerx - 120 + 10 * i, y - 5 * i)
+
+                boss_bullet2 = BossBullet(7, 0, *groups)
+                boss_bullet2.rect.midbottom = (self.rect.centerx + 120 - 10 * i, y - 5 * i)
+            for i in range(8):
+                boss_bullet1 = BossBullet(4, i, *groups)
+                y = self.rect.y + self.rect.h / 2 + 20
+                boss_bullet1.rect.midbottom = (self.rect.centerx, y)
+            for i in range(8):
+                boss_bullet1 = BossBullet(3, i, *groups)
+                y = self.rect.y + self.rect.h / 2 + 20
+                boss_bullet1.rect.midbottom = (self.rect.centerx, y)
+
+
+
 class BossBullet(Bullet):
 
     def __init__(self, kind, differ, *group):
@@ -433,6 +537,21 @@ class BossBullet(Bullet):
             self.rect.x += 0.1
             self.rect.y -= self.speed * 0.05 * self.count_y
             self.count += 0.05
+
+        elif self.kind == 7:
+
+            self.rect.x += 0.1
+            self.rect.y -= self.speed * 0.05 * self.count_y
+
+        elif self.kind == 8:
+            self.rect.x += 5 + self.differ - self.count
+            self.count += 0.05
+
+        elif self.kind == 9:
+            pass
+
+        elif self.kind == 10:
+            pass
 
         if self.rect.bottom > SCREEN_RECT.h:
             self.kill()

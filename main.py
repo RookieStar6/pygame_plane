@@ -34,7 +34,8 @@ class Game(object):
         # 初始化敌机
         self.create_enemies()
         #初始化boss
-        self.boss = Boss(1, 10000, 1, self.boss_group, self.all_group)
+        self.boss = Boss1(100, 1, self.boss_group, self.all_group)
+        # self.boss = Boss2(1000, 1, self.boss_group, self.all_group)
         # 初始化道具
         self.create_supply()
         # 音乐播放
@@ -240,12 +241,15 @@ class Game(object):
             if hero.hp > 0:
                 for bullet in self.boss.bullets_groups:
                     hero.hp -= bullet.damage
+                    #boss子弹不需要删除
+
 
 
         for boss in hit_boss:
             if boss.hp > 0:
                 for bullet in self.myplane.bullets_groups:
                     boss.hp -= bullet.damage
+                    bullet.kill()
 
         for enemy in hit_enemies:
             if enemy.hp <= 0:
@@ -254,7 +258,7 @@ class Game(object):
             for bullet in hit_enemies[enemy]:
                 bullet.kill()  # 销毁子弹
                 enemy.hp -= bullet.damage
-                hit_boss[0].hp -= bullet.damage
+
 
                 if enemy.hp > 0:  # 如果敌军没被摧毁，继续遍历后面的击中子弹
                     continue
