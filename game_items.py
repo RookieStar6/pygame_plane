@@ -215,7 +215,7 @@ class Enemy(Plane):
         elif self.kind == 1:
             pygame.time.set_timer(ENEMY_FIRE_EVENT, 1600)
         elif self.kind == 2:
-            pygame.time.set_timer(ENEMY_FIRE_EVENT, 2000)
+            pygame.time.set_timer(ENEMY_FIRE_EVENT, 1600)
         self.reset_plane()
 
     def reset_plane(self):
@@ -244,11 +244,15 @@ class Enemy(Plane):
     def fire(self, display_groups):
         # 准备要显示的组
         groups = (display_groups, self.bullets_groups)
-        # 创建子弹并且确定位置
-        for i in range(1):
-            bullet1 = EnemyBullet(self.kind, 1, *groups)
-            y = self.rect.y + self.rect.h
-            bullet1.rect.midbottom = (self.rect.centerx, y)
+        if self.rect.y >0 :
+            # 创建子弹并且确定位置
+            for i in range(1):
+                bullet1 = EnemyBullet(self.kind, 1, *groups)
+                if self.kind ==3 :
+                    y= self.rect.y +30
+                else:
+                    y = self.rect.y + 15
+                    bullet1.rect.midbottom = (self.rect.centerx, y)
 
 
 
@@ -310,7 +314,6 @@ class Hero(Plane):
 
         # 发布无敌事件
         pygame.time.set_timer(HERO_ISPOWER_EVENT, 3000)
-
     def fire(self, display_groups):
         # 准备要显示的组
         groups = (display_groups, self.bullets_groups)
@@ -354,7 +357,7 @@ class Bullet(GameSprite):
         elif kind == 9:
             image_name = "bullet12.png"
         elif kind == 10:
-            image_name = "buttet13.png"
+            image_name = "bullet13.png"
 
         super(Bullet, self).__init__(image_name, -12, *group)
 
@@ -375,7 +378,8 @@ class EnemyBullet(Bullet):
         self.damage = damage
 
     def update(self, *args):
-        self.rect.y -= 0.5 * self.speed
+        self.rect.y -= 0.45 * self.speed
+
 
 class Boss1(Plane):
 
@@ -614,3 +618,10 @@ class Supply(GameSprite):
 
     def reset(self):
         self.rect.top = SCREEN_RECT.h  # 道具的初始位置
+
+class Menu(GameSprite):
+    def __init__(self, *group):
+        super(Menu, self).__init__('start_buttom.png', 0, *group)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = SCREEN_RECT.centerx
+        self.rect.centery = SCREEN_RECT.centery - 100

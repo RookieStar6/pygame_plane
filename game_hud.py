@@ -12,6 +12,7 @@ class HUDpanel(object):
     level2_score = 10000
     level3_score = 50000
 
+    boos1_score =150000
     record_filename = "record.txt"
 
     # 所有面板精灵的控制类
@@ -76,7 +77,6 @@ class HUDpanel(object):
         self.lives_sprite.rect.right = self.live_label.rect.x - self.margin
 
     def increase_score(self, enemy_score):
-        global level_2
         is_update = False
         # 计算最新得分
         score = self.score + enemy_score
@@ -95,8 +95,10 @@ class HUDpanel(object):
             level = 1
         elif score < self.level3_score:
             level = 2
-        else:
+        elif score <self.boos1_score:
             level = 3
+        else:
+            level= 4
         if self.level != level:
             is_update = True
             print("已升级----，当前关卡 :",level)
