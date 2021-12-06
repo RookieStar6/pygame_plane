@@ -35,8 +35,8 @@ class Game(object):
         #self.create_enemies()
         # 初始化boss
 
-        self.boss = Boss1(100, 1, self.boss_group)
-        self.boss2 = Boss2(1000, 1, self.boss_group)
+        self.boss1 = Boss1(10000, 1, self.boss_group)
+        self.boss2 = Boss2(10000, 1, self.boss_group)
         # 初始化道具
         #self.create_supply()
         # 音乐播放
@@ -150,6 +150,7 @@ class Game(object):
                     if self.hud_panel.increase_score(score):
                         self.create_enemies()
 
+
                         # self.enemies_group.empty()
                         # self.create_boss()
 
@@ -175,13 +176,15 @@ class Game(object):
                 elif event.type == HERO_FIRE_EVENT:
                     self.player.play_sound("bullet.wav")
                     self.myplane.fire(self.all_group)
+                    # self.boss1.fire(self.all_group)
                 elif event.type == ENEMY_FIRE_EVENT:
                     for enemy in self.enemies_group:
                         pass
                         enemy.fire(self.all_group)
-                        # self.boss.fire(self.all_group)
+
+
                 elif event.type == BOSS_EVENT:
-                    pass
+                    self.boss1.fire(self.all_group)
         return False
 
     def create_enemies(self):
@@ -221,11 +224,18 @@ class Game(object):
             for i in range(2):
                 Enemy(2, 1, *group)
         elif self.hud_panel.level == 4:
-            for i in self.enemies_group:
-                self.all_group.remove(i)
+            for enemy in self.enemies_group:
+                enemy.kill()
 
-            self.all_group.add(self.boss2)
-            self.boss2.fire(self.all_group)
+            for enemy in self.enemies_group:
+                for bullet in enemy.bullets_groups:
+                    bullet.kill()
+
+            # pygame.time.set_timer(HERO_FIRE_EVENT, 200)
+
+            # self.boss1 = Boss1(100, 1, self.boss_group, self.all_group)
+            self.all_group.add(self.boss1)
+            # self.boss.fire(self.all_group)
 
     def create_boss(self):
 
@@ -269,16 +279,12 @@ class Game(object):
                         self.myplane.hp = 0
 
         # boss子弹和玩家碰撞
-        hit_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss.bullets_groups,
+        hit_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss1.bullets_groups,
                                               False, False, pygame.sprite.collide_mask)
 
         if len(hit_hero) > 0:
             self.myplane.hp = 0
-        # for hero in hit_hero:
-        #     if hero.hp > 0:
-        #         for bullet in self.boss.bullets_groups:
-        #             hero.hp -= bullet.damage
-        # boss子弹不需要删除
+
 
         for boss in hit_boss:
             if boss.hp > 0:

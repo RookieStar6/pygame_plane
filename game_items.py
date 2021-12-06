@@ -397,10 +397,17 @@ class Boss1(Plane):
         self.rect.centerx = SCREEN_RECT.centerx
         self.rect.y = -self.rect.h
 
+
+
+
     def update(self, *args):
         super(Boss1, self).update(*args)
         hp_percentage = self.hp / self.max_hp  # 血量百分比
         #boss入场
+        if self.rect.y == 0 :
+            pygame.time.set_timer(BOSS_EVENT, 200)
+
+
         if self.rect.y <= 20:
             self.rect.y += 1
         # boss在不同血量情形下，移动至不同位置
