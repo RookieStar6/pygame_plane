@@ -1,218 +1,172 @@
+# 游戏面板，管理状态，分数，炸弹提示，生命条数，文字提示
 from game_items import *
-import pygame
 
-class HUDPanel(object):
 
-    '''
-    manage all the sprites from panel
-    '''
-    margin = 10
+class HUDpanel(object):
+    margin = 10  # 精灵的距离
     white = (255, 255, 255)
     gray = (64, 64, 64)
+    black = (0, 0, 0)
 
+    reward_score = 100000
     level2_score = 10000
     level3_score = 50000
-    reward_score = 100000
 
     record_filename = "record.txt"
 
+    # 所有面板精灵的控制类
     def __init__(self, display_group):
-        #fundamental attributes
+        # 基本数据
         self.score = 0
         self.lives_count = 3
         self.level = 1
         self.best_score = 0
+        self.load_best_score()
+        # 图像精灵
 
-        #image sprite
-        self.status_sprite = StatusButton(('panel/pause.png', 'panel/play.png'), display_group)
+        # 状态按钮
+        self.status_sprite = StatusButton(('resume.png', 'pause.png'), display_group)
         self.status_sprite.rect.topleft = (self.margin, self.margin)
 
-        #bomb sprite
-        self.bomb_sprite = GameSprite('panel/boom.png', 0, display_group)
-        self.bomb_sprite.rect.x = self.margin
-        self.bomb_sprite.rect.bottom = SCREEN_RECT.bottom - self.margin
+        # 炸弹精灵
+        self.boom_sprite = GameSprite('bomb.png', 0, display_group)
+        self.boom_sprite.rect.x = self.margin
+        self.boom_sprite.rect.bottom = SCREEN_RECT.height - self.margin
 
-
-
-        #score label
-        self.score_label = Label('%d'%self.score, 32, self.white, display_group)
+        # 得分标签
+        self.score_label = Label('%d' % self.score, 50, self.black, display_group)
         self.score_label.rect.midleft = (self.status_sprite.rect.right + self.margin,
                                          self.status_sprite.rect.centery)
+        # 炸弹计数标签
+        self.boom_label = Label('X 3', 32, self.black, display_group)
+        self.boom_label.rect.midleft = (self.boom_sprite.rect.right + self.margin,
+                                        self.boom_sprite.rect.centery)
+        # 生命计数标签
+        self.live_label = Label('X %d' % self.lives_count, 32, self.black, display_group)
+        self.live_label.rect.midright = (SCREEN_RECT.right - self.margin,
+                                         self.boom_sprite.rect.centery)
+        # 底部生命精灵
+        self.lives_sprite = GameSprite('hud_plane.png', 0, display_group)
+        self.lives_sprite.rect.right = (self.live_label.rect.x - self.margin)
+        self.lives_sprite.rect.bottom = SCREEN_RECT.height - self.margin
 
-
-        #bomb label
-        self.bomb_label = Label('X 3', 32, self.white, display_group)
-        self.bomb_label.rect.midleft = (self.bomb_sprite.rect.right + self.margin,
-                                        self.bomb_sprite.rect.centery)
-
-        #lives label
-        self.lives_label = Label('X %d'%self.lives_count, 32, self.white, display_group)
-        self.lives_label.rect.midright = (SCREEN_RECT.right - self.margin,
-                                          self.bomb_sprite.rect.centery)
-
-        # lives sprite
-        self.lives_sprite = GameSprite('panel/heart.png', 0, display_group)
-        self.lives_sprite.rect.right = self.lives_label.rect.x - self.margin
-        self.lives_sprite.rect.bottom = SCREEN_RECT.bottom - self.margin
-
-
-        #best score label
-        self.best_label = Label('Best:%d'%self.best_score, 36, self.white)
+        # 最好成绩标签
+        self.best_label = Label('Best: %d' % self.best_score, 36, self.white)
         self.best_label.rect.center = SCREEN_RECT.center
-
-        # status label
-        self.status_label = Label('Game Paused!', 48, self.white)
+        # 状态标签
+        self.status_label = Label('Game Paused', 48, self.white)
         self.status_label.rect.midbottom = (self.best_label.rect.centerx,
-                                            self.best_label.rect.y - 2 * self.margin)
+                                            self.best_label.rect.top - 4 * self.margin)
+        # 提示标签
+        self.tips_label = Label('Press spacebar to  continue', 22, self.white)
+        self.tips_label.rect.midtop = (self.best_label.rect.centerx,
+                                       self.best_label.rect.bottom + 6 * self.margin)
 
-        #hint label
-        self.tip_label = Label('Press spacebar to continue', 22, self.white)
-        self.tip_label.rect.midtop = (self.best_label.rect.centerx,
-                                      self.best_label.rect.y + 8 * self.margin)
+    def change_bomb(self, count):
+        self.boom_label.set_text('X %d' % count)
+        self.boom_label.rect.midleft = (self.boom_sprite.rect.right + self.margin,
+                                        self.boom_sprite.rect.centery)
 
-        #load best scores
-        self.load_best_score()
-        print('best score %d'%self.best_score)
+    def change_lives(self):
+        self.live_label.set_text('X %d' % self.lives_count)
+        self.live_label.rect.midright = (SCREEN_RECT.right - self.margin,
+                                         self.boom_sprite.rect.centery)
 
-    def show_bomb(self, count):
-        '''
-        update the number of bomb
-        :param count: updated count
-        :return: None
-        '''
-        self.bomb_label.set_text('X %d'%count)
-        self.bomb_label.rect.midleft = (self.bomb_sprite.rect.right + self.margin,
-                                        self.bomb_sprite.rect.centery)
-
-    def show_lives(self):
-        '''
-        update the number of lives
-        :return: None
-        '''
-        #correct the position of lives label
-        self.lives_label.set_text('X %d'%self.lives_count)
-        self.lives_label.rect.midright = (SCREEN_RECT.right - self.margin,
-                                          self.bomb_sprite.rect.centery)
-        #correct the position of lives sprite
-        self.lives_sprite.rect.right = self.lives_label.rect.x - self.margin
+        # 如果是 二位数的生命值，宽度会增加，所以左侧飞机图标要跟着变一下
+        self.lives_sprite.rect.right = self.live_label.rect.x - self.margin
 
     def increase_score(self, enemy_score):
-        '''
-        modify the label
-        :param enemy_score:
-        :return: None
-        '''
-        #calculate the score
+        is_update = False
+        # 计算最新得分
         score = self.score + enemy_score
 
-        #judge if lives get more
+        # 判断是否增加生命值
         if score // self.reward_score != self.score // self.reward_score:
             self.lives_count += 1
-            self.show_lives()
-
+            self.change_lives()
         self.score = score
 
-
-        #upgrade best score
+        # 更新最好成绩
         self.best_score = score if score > self.best_score else self.best_score
 
-        #calculate the level
+        # 计算最新关卡等级
         if score < self.level2_score:
             level = 1
         elif score < self.level3_score:
             level = 2
         else:
             level = 3
-
-        is_upgrade = level != self.level
+        if self.level != level:
+            is_update = True
         self.level = level
 
-        #upgrade score sprite
-        self.score_label.set_text('%d'%score)
+        # 更新得分的精灵显示内容
+        self.score_label.set_text("%d" % score)
+        # 更新得分的位置
         self.score_label.rect.midleft = (self.status_sprite.rect.right + self.margin,
                                          self.status_sprite.rect.centery)
-        #return
-        return is_upgrade
+        # 返回是否升级 给主逻辑
+        return is_update
 
     def save_best_score(self):
-        '''
-        save the best score
-        :return:
-        '''
-        file = open(self.record_filename, 'w')
-        file.write('%d'%self.best_score)
+        # 保存最好成绩到文件中
+        file = open(self.record_filename, "w")
+        file.write("%d" % self.best_score)
         file.close()
 
     def load_best_score(self):
-        '''
-        load the best score
-        :return: None
-        '''
-
         try:
-            file = open(self.record_filename, 'r')
+            # 读取最好成绩
+            file = open(self.record_filename, "r")
             content = file.read()
             file.close()
 
+            # 读出来的是字符串，转int
             self.best_score = int(content)
-        except (FileNotFoundError, ValueError):
-            print("Best score file not found!")
+        except FileNotFoundError:
+            print("读取文件异常")
 
     def panel_paused(self, is_game_over, display_group):
-        '''
-        display the hint when the game stops
-        :param is_game_over:True, game over, False, game paused
-        :param display_group: sprite group
-        :return: None
-        '''
-
-        #judge if the hint has already been displayed
-        if display_group.has(self.best_label, self.status_label, self.tip_label):
+        # 游戏停止显示提示信息，is_game_over 为True说明游戏结束，反之为暂停
+        # 判断是否已经显示了提示信息
+        if display_group.has(self.best_label, self.status_label, self.tips_label):
             return
+        # 根据游戏状态生成提示文本
+        tip = "Press spacebar to"
+        if is_game_over:
+            status = "Game over"
+            tip += "  play again"
+        else:
+            status = "Game Pause"
+            tip += "  continue"
 
-        #get hint based on the status of game
-        statues = 'Game Over!' if is_game_over else 'Game Paused!'
-        tip = 'Press spacebar to '
-        tip += 'play again' if is_game_over else 'continue.'
+        # 修改标签精灵的文件内容
+        self.best_label.set_text("Best: %d" % self.best_score)
+        self.status_label.set_text(status)
+        self.tips_label.set_text(tip)
 
-        #modify the contents
-        self.best_label.set_text('Best:%d'%self.best_score)
-        self.status_label.set_text(statues)
-        self.tip_label.set_text(tip)
-
-        #correct the position of label
+        # 修改最新位置
         self.best_label.rect.center = SCREEN_RECT.center
         self.status_label.rect.midbottom = (self.best_label.rect.centerx,
-                                            self.best_label.rect.y - 2 * self.margin)
-        self.tip_label.rect.midtop = (self.best_label.rect.centerx,
-                                      self.best_label.rect.y + 8 * self.margin)
-
-        #display the label
-        display_group.add(self.best_label, self.status_label, self.tip_label)
-
-        #correct the status button
+                                            self.best_label.rect.top - 4 * self.margin)
+        self.tips_label.rect.midtop = (self.best_label.rect.centerx,
+                                       self.best_label.rect.bottom + 6 * self.margin)
+        # 把标签精灵添加到精灵组
+        display_group.add(self.best_label, self.tips_label, self.status_label)
+        # 修改状态按钮
         self.status_sprite.switch_status(True)
 
     def panel_resume(self, display_group):
-        '''
-        the label should be hid
-        :param display_group:
-        :return: None
-        '''
-        display_group.remove(self.best_label, self.status_label, self.tip_label)
-
+        # 取消停滞状态，隐藏提示信息
+        display_group.remove(self.best_label, self.status_label, self.tips_label)
+        # 恢复暂停按钮
         self.status_sprite.switch_status(False)
 
     def reset_panel(self):
-        '''
-        reset the panel
-        :return: None
-        '''
-
         self.score = 0
         self.lives_count = 3
 
-        #reset the sprite
+        # 重置精灵数据
         self.increase_score(0)
-        self.show_bomb(3)
-        self.show_lives()
+        self.change_lives()
+        self.change_bomb(3)
