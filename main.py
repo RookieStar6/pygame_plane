@@ -43,17 +43,16 @@ class Game(object):
         # self.create_enemies()
         # 初始化boss
 
-        self.boss1 = Boss1(10000, 1, self.boss_group)
-        self.boss2 = Boss2(10000, 1, self.boss_group)
+        self.boss1 = Boss1(1000, 1, self.boss_group)
+        self.boss2 = Boss2(1000, 1, self.boss_group)
         # 初始化道具
-        # self.create_supply()
+        #self.create_supply()
         # 音乐播放
         self.player = MusicPlayer('game_music.ogg')
         self.player.play_music()
         # Menu
         self.menu = Menu()
         self.all_group.add(self.menu)
-
     def rest_game(self):
         # 重置游戏数据
         self.is_game_over = False
@@ -72,13 +71,10 @@ class Game(object):
             bullet.kill()
         for boss in self.boss_group:
             boss.kill()
-        for supply in self.supplies_group:
+        for supply in self.supplies_group :
             supply.kill()
-        #for i in self.boss1.bullets_groups:
-        #    i.kill()
         self.create_enemies()
         self.create_supply()
-
     def start(self):
         # 创建时钟
         clock = pygame.time.Clock()
@@ -187,7 +183,7 @@ class Game(object):
                     supply.throw_supply()
                 elif event.type == BULLET_ENAHCE_EVENT:
                     # 双排时间已过，恢复子弹
-                    self.myplane.bullets_kind = 0
+                    self.myplane.bullets_kind = 9
                     pygame.time.set_timer(BULLET_ENAHCE_EVENT, 0)
                 elif event.type == HERO_FIRE_EVENT:
                     self.player.play_sound("bullet.wav")
@@ -196,10 +192,18 @@ class Game(object):
                 elif event.type == ENEMY_FIRE_EVENT:
                     for enemy in self.enemies_group:
                         enemy.fire(self.all_group)
-
-
                 elif event.type == BOSS_EVENT:
-                    self.boss1.fire(self.all_group)
+                    boss_music1 = self.player.play_sound("boss1.mp3")#有问题
+                    if self.boss1.hp >= 0:
+
+                        self.boss1.fire(self.all_group)
+                    else:
+                        pygame.mixer.music.pause()
+                elif event.type == BOSS2_EVENT:
+                    if self.boss2.hp > 0:
+                        self.boss2.fire((self.all_group))
+                # elif event.type == NEW_LEVEL_EVENT:
+                #     self.create_enemies()
         return False
 
     def create_enemies(self):
@@ -246,12 +250,21 @@ class Game(object):
                 for bullet in enemy.bullets_groups:
                     bullet.kill()
 
-            # pygame.time.set_timer(HERO_FIRE_EVENT, 200)
-
-            # self.boss1 = Boss1(100, 1, self.boss_group, self.all_group)
             self.all_group.add(self.boss1)
-            # self.boss.fire(self.all_group)
+        elif self.hud_panel.level == 5 and self.boss1.hp <= 0:
+            for i in range(0, 5):
+                Enemy(0, 4, *group)
+            for i in range(3):
+                Enemy(1, 2, *group)
+        elif self.hud_panel.level == 6:
+            for enemy in self.enemies_group:
+                enemy.kill()
 
+            for enemy in self.enemies_group:
+                for bullet in enemy.bullets_groups:
+                    bullet.kill()
+
+            self.all_group.add(self.boss2)
     def create_boss(self):
 
         group = (self.all_group, self.boss_group)
@@ -306,6 +319,17 @@ class Game(object):
                 for bullet in self.myplane.bullets_groups:
                     boss.hp -= bullet.damage
                     bullet.kill()
+            elif boss.hp <= 0:
+                boss.kill()
+                self.boss_group.remove()
+                if self.hud_panel.increase_score(boss.value):
+                    self.create_enemies()
+
+                # new_level = pygame.event.Event(NEW_LEVEL_EVENT)
+                # pygame.event.post(new_level)
+            # if self.hud_panel.increase_score(boss.value):
+            #     # 升级音效
+            #     self.player.play_sound("upgrade.wav")
 
         for enemy in hit_enemies:
             if enemy.hp <= 0:
@@ -350,13 +374,6 @@ class Game(object):
         Supply(1, self.all_group, self.supplies_group)
         pygame.time.set_timer(THROW_SUPPORT_EVENT, 15000)
 
-    def change_bg(self):
-        if self.hud_panel.level == 2:
-            print("--")
-            self.b1.remove(self.all_group)
-            self.b2.remove(self.all_group)
-            self.b3 = Background2(False, self.all_group)
-            self.b3 = Background2(True, self.all_group)
 
 if __name__ == '__main__':
     # 初始化游戏
