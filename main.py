@@ -5,6 +5,13 @@ from game_music import *
 import random
 
 
+# 非洲人-道具
+# 郭一麟（面板界面 敌军飞机）
+# 朱昶歆 BOSS（BOSS飞机+BOSS子弹）
+# 刘紫昕 （敌军子弹）
+# 江雪嵘（英雄飞机+游戏开始按钮，分数）
+# 胡逸韬（音乐类各种触发事件，游戏开始和结束的回收资源） main-53
+
 class Game(object):
 
     def __init__(self):
@@ -32,19 +39,20 @@ class Game(object):
         # 把原来面板上炸弹的数量关联到飞机上
         self.hud_panel.change_bomb(self.myplane.bomb_count)
         # 初始化敌机
-        #self.create_enemies()
+        # self.create_enemies()
         # 初始化boss
 
         self.boss = Boss1(100, 1, self.boss_group)
         self.boss2 = Boss2(1000, 1, self.boss_group)
         # 初始化道具
-        #self.create_supply()
+        # self.create_supply()
         # 音乐播放
         self.player = MusicPlayer('game_music.ogg')
         self.player.play_music()
         # Menu
         self.menu = Menu()
         self.all_group.add(self.menu)
+
     def rest_game(self):
         # 重置游戏数据
         self.is_game_over = False
@@ -63,10 +71,11 @@ class Game(object):
             bullet.kill()
         for boss in self.boss_group:
             boss.kill()
-        for supply in self.supplies_group :
+        for supply in self.supplies_group:
             supply.kill()
         self.create_enemies()
         self.create_supply()
+
     def start(self):
         # 创建时钟
         clock = pygame.time.Clock()
@@ -177,7 +186,6 @@ class Game(object):
                     self.myplane.fire(self.all_group)
                 elif event.type == ENEMY_FIRE_EVENT:
                     for enemy in self.enemies_group:
-                        pass
                         enemy.fire(self.all_group)
                         # self.boss.fire(self.all_group)
                 elif event.type == BOSS_EVENT:

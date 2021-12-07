@@ -10,7 +10,7 @@ class MusicPlayer(object):
         # 初始化音乐播放器
         # 背景音乐
         pygame.mixer.music.load(self.res_path + music_file)
-        pygame.mixer.music.set_volume(0.2)
+        pygame.mixer.music.set_volume(1)
 
         # 初始化音效字典
         self.sound_dirt = {}
