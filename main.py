@@ -186,8 +186,7 @@ class Game(object):
                         enemy.fire(self.all_group)
                 elif event.type == BOSS_EVENT:
                     boss_music1 = self.player.play_sound("boss1.mp3")#有问题
-                    if self.boss1.hp >= 0:
-
+                    if self.boss1.hp > 0:
                         self.boss1.fire(self.all_group)
                     else:
                         pygame.mixer.music.pause()
