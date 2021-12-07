@@ -27,9 +27,11 @@ BULLET_ENAHCE_EVENT =pygame.USEREVENT +4
 
 #boss
 BOSS_EVENT = pygame.USEREVENT + 5
-
+BOSS2_EVENT = pygame.USEREVENT + 8
 #敌人子弹事件
 ENEMY_FIRE_EVENT = pygame.USEREVENT + 6
+
+NEW_LEVEL_EVENT = pygame.USEREVENT + 7
 
 
 class GameSprite(pygame.sprite.Sprite):
@@ -57,9 +59,9 @@ class GameSprite(pygame.sprite.Sprite):
 
 
 class Background(GameSprite):
-    def __init__(self, flag, *group):
+    def __init__(self, filename, flag, *group):
         # 如果flag是True,显示在窗口内部，反之外部
-        super(Background, self).__init__('bg2.jpg', 1, *group)
+        super(Background, self).__init__(filename, 1, *group)
         if flag:
             self.rect.y = -self.rect.h
 
@@ -321,12 +323,6 @@ class Hero(Plane):
         for i in range(3):
             bullet1 = Bullet(self.bullets_kind, *groups)
             y = self.rect.y - i * 15
-            # if self.bullets_kind == 0:
-            #     bullet1.rect.midbottom = (self.rect.centerx, y)
-            # else:
-            #     bullet1.rect.midbottom = (self.rect.centerx - 20, y)
-            #     bullet2 = Bullet(self.bullets_kind, *groups)
-            #     bullet2.rect.midbottom = (self.rect.centerx + 20, y)
             bullet1.rect.midbottom = (self.rect.centerx, y)
 
 
@@ -384,7 +380,7 @@ class EnemyBullet(Bullet):
 class Boss1(Plane):
 
     def __init__(self, max_hp, max_speed, *group):
-        self.value = 50000
+        self.value = 100000
         self.bullets_groups = pygame.sprite.Group()
         super(Boss1, self).__init__(
             ['boss1/boss%d.png'% x for x in range(1, 6)],
@@ -463,7 +459,7 @@ class Boss1(Plane):
 
 class Boss2(Plane):
     def __init__(self, max_hp, max_speed, *group):
-        self.value = 80000
+        self.value = 150000
         self.bullets_groups = pygame.sprite.Group()
         super(Boss2, self).__init__(
             ['boss2/boss%d.png' % x for x in range(1, 6)],
@@ -477,6 +473,8 @@ class Boss2(Plane):
 
     def update(self, *args):
         super(Boss2, self).update(*args)
+        if self.rect.y == 0 :
+            pygame.time.set_timer(BOSS2_EVENT, 200)
         hp_percentage = self.hp / self.max_hp  # 血量百分比
         # boss入场
         if self.rect.y <= 20:

@@ -23,7 +23,7 @@ class Game(object):
         # 游戏精灵
         # Background(False, self.all_group)  # 背景精灵1
         # Background(True, self.all_group)  # 背景精灵2
-        self.all_group.add(Background(False), Background(True))  # 添加两个精灵
+        self.all_group.add(Background('bg1.jpg', False), Background('bg1.jpg', True))  # 添加两个精灵
         # myplane = Plane(("me1.png","me2.png"),  self.all_group)
         self.myplane = Hero(self.all_group, self.myplane_group)
 
@@ -35,8 +35,8 @@ class Game(object):
         #self.create_enemies()
         # 初始化boss
 
-        self.boss1 = Boss1(10000, 1, self.boss_group)
-        self.boss2 = Boss2(10000, 1, self.boss_group)
+        self.boss1 = Boss1(1000, 1, self.boss_group)
+        self.boss2 = Boss2(1000, 1, self.boss_group)
         # 初始化道具
         #self.create_supply()
         # 音乐播放
@@ -150,6 +150,9 @@ class Game(object):
                     if self.hud_panel.increase_score(score):
                         self.create_enemies()
 
+                    # if not self.boss_group:
+                    #     self.create_enemies()
+
 
                         # self.enemies_group.empty()
                         # self.create_boss()
@@ -171,7 +174,7 @@ class Game(object):
                     supply.throw_supply()
                 elif event.type == BULLET_ENAHCE_EVENT:
                     # 双排时间已过，恢复子弹
-                    self.myplane.bullets_kind = 0
+                    self.myplane.bullets_kind = 9
                     pygame.time.set_timer(BULLET_ENAHCE_EVENT, 0)
                 elif event.type == HERO_FIRE_EVENT:
                     self.player.play_sound("bullet.wav")
@@ -181,10 +184,18 @@ class Game(object):
                     for enemy in self.enemies_group:
                         pass
                         enemy.fire(self.all_group)
-
-
                 elif event.type == BOSS_EVENT:
-                    self.boss1.fire(self.all_group)
+                    boss_music1 = self.player.play_sound("boss1.mp3")#有问题
+                    if self.boss1.hp >= 0:
+
+                        self.boss1.fire(self.all_group)
+                    else:
+                        pygame.mixer.music.pause()
+                elif event.type == BOSS2_EVENT:
+                    if self.boss2.hp > 0:
+                        self.boss2.fire((self.all_group))
+                # elif event.type == NEW_LEVEL_EVENT:
+                #     self.create_enemies()
         return False
 
     def create_enemies(self):
@@ -231,12 +242,21 @@ class Game(object):
                 for bullet in enemy.bullets_groups:
                     bullet.kill()
 
-            # pygame.time.set_timer(HERO_FIRE_EVENT, 200)
-
-            # self.boss1 = Boss1(100, 1, self.boss_group, self.all_group)
             self.all_group.add(self.boss1)
-            # self.boss.fire(self.all_group)
+        elif self.hud_panel.level == 5 and self.boss1.hp <= 0:
+            for i in range(0, 5):
+                Enemy(0, 4, *group)
+            for i in range(3):
+                Enemy(1, 2, *group)
+        elif self.hud_panel.level == 6:
+            for enemy in self.enemies_group:
+                enemy.kill()
 
+            for enemy in self.enemies_group:
+                for bullet in enemy.bullets_groups:
+                    bullet.kill()
+
+            self.all_group.add(self.boss2)
     def create_boss(self):
 
         group = (self.all_group, self.boss_group)
@@ -291,6 +311,17 @@ class Game(object):
                 for bullet in self.myplane.bullets_groups:
                     boss.hp -= bullet.damage
                     bullet.kill()
+            elif boss.hp <= 0:
+                boss.kill()
+                self.boss_group.remove()
+                if self.hud_panel.increase_score(boss.value):
+                    self.create_enemies()
+
+                # new_level = pygame.event.Event(NEW_LEVEL_EVENT)
+                # pygame.event.post(new_level)
+            # if self.hud_panel.increase_score(boss.value):
+            #     # 升级音效
+            #     self.player.play_sound("upgrade.wav")
 
         for enemy in hit_enemies:
             if enemy.hp <= 0:

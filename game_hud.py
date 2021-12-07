@@ -11,8 +11,12 @@ class HUDpanel(object):
     reward_score = 100000
     level2_score = 10000
     level3_score = 50000
+    boos1_score = 200000
+    level4_score = 300000
+    level5_score = 500000
+    level6_score = 800000
 
-    boos1_score =150000
+
     record_filename = "record.txt"
 
     # 所有面板精灵的控制类
@@ -35,15 +39,15 @@ class HUDpanel(object):
         self.boom_sprite.rect.bottom = SCREEN_RECT.height - self.margin
 
         # 得分标签
-        self.score_label = Label('%d' % self.score, 50, self.black, display_group)
+        self.score_label = Label('%d' % self.score, 50, self.white, display_group)
         self.score_label.rect.midleft = (self.status_sprite.rect.right + self.margin,
                                          self.status_sprite.rect.centery)
         # 炸弹计数标签
-        self.boom_label = Label('X 3', 32, self.black, display_group)
+        self.boom_label = Label('X 3', 32, self.white, display_group)
         self.boom_label.rect.midleft = (self.boom_sprite.rect.right + self.margin,
                                         self.boom_sprite.rect.centery)
         # 生命计数标签
-        self.live_label = Label('X %d' % self.lives_count, 32, self.black, display_group)
+        self.live_label = Label('X %d' % self.lives_count, 32, self.white, display_group)
         self.live_label.rect.midright = (SCREEN_RECT.right - self.margin,
                                          self.boom_sprite.rect.centery)
         # 底部生命精灵
@@ -62,6 +66,12 @@ class HUDpanel(object):
         self.tips_label = Label('Press spacebar to  continue', 22, self.white)
         self.tips_label.rect.midtop = (self.best_label.rect.centerx,
                                        self.best_label.rect.bottom + 6 * self.margin)
+
+        self.level_up = Label('Level %d'% self.level, 30, self.white, display_group)
+        # self.level_up.rect.right = (SCREEN_RECT.right - self.margin)
+        self.level_up.rect.midright = (SCREEN_RECT.right - self.margin,
+                                         self.status_sprite.rect.centery)
+
 
     def change_bomb(self, count):
         self.boom_label.set_text('X %d' % count)
@@ -97,11 +107,20 @@ class HUDpanel(object):
             level = 2
         elif score <self.boos1_score:
             level = 3
-        else:
-            level= 4
+        elif score <self.level4_score:
+            level = 4
+        elif score <self.level5_score:
+            level = 5
+        elif score <self.level6_score:
+            level = 6
+        # else:
+        #     level= 4
         if self.level != level:
             is_update = True
             print("已升级----，当前关卡 :",level)
+            self.level_up.set_text("Level %d"%level)
+            self.level_up.rect.midright = (SCREEN_RECT.right - self.margin,
+                                           self.status_sprite.rect.centery)
         self.level = level
 
         # 更新得分的精灵显示内容
