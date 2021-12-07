@@ -27,10 +27,11 @@ class Game(object):
         self.enemies_group = pygame.sprite.Group()  # 敌军组
         self.supplies_group = pygame.sprite.Group()  # 道具组
         self.boss_group = pygame.sprite.Group()  # boss组
+        self.bg_group = pygame.sprite.Group()
         # 游戏精灵
-        # Background(False, self.all_group)  # 背景精灵1
-        # Background(True, self.all_group)  # 背景精灵2
-        self.all_group.add(Background(False), Background(True))  # 添加两个精灵
+        self.b1 =Background(False, self.all_group)  # 背景精灵1
+        self.b2 =Background(True, self.all_group)  # 背景精灵2
+        #self.all_group.add(Background(False), Background(True))  # 添加两个精灵
         # myplane = Plane(("me1.png","me2.png"),  self.all_group)
         self.myplane = Hero(self.all_group, self.myplane_group)
 
@@ -73,6 +74,8 @@ class Game(object):
             boss.kill()
         for supply in self.supplies_group:
             supply.kill()
+        #for i in self.boss1.bullets_groups:
+        #    i.kill()
         self.create_enemies()
         self.create_supply()
 
@@ -158,7 +161,11 @@ class Game(object):
                     # 更新得分,如果最新得分应该升级，增加敌机数量
                     if self.hud_panel.increase_score(score):
                         self.create_enemies()
-
+                        if self.hud_panel.level >=2:
+                            self.b1.remove(self.all_group)
+                            self.b2.remove(self.all_group)
+                            self.b3 = Background2(False, self.all_group)
+                            self.b3 = Background2(True, self.all_group)
 
                         # self.enemies_group.empty()
                         # self.create_boss()
@@ -343,6 +350,13 @@ class Game(object):
         Supply(1, self.all_group, self.supplies_group)
         pygame.time.set_timer(THROW_SUPPORT_EVENT, 15000)
 
+    def change_bg(self):
+        if self.hud_panel.level == 2:
+            print("--")
+            self.b1.remove(self.all_group)
+            self.b2.remove(self.all_group)
+            self.b3 = Background2(False, self.all_group)
+            self.b3 = Background2(True, self.all_group)
 
 if __name__ == '__main__':
     # 初始化游戏
