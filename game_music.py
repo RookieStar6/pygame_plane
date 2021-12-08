@@ -35,6 +35,12 @@ class MusicPlayer(object):
         else:
             pygame.mixer.music.unpause()
 
+    @staticmethod
+    def pause_music2():
+        pygame.mixer.music.pause()
+
     # 根据map 的key值(文件名)，直接播放音乐
     def play_sound(self, music_name):
         self.sound_dirt[music_name].play()
+    def stop_sound(self, music_name):
+        self.sound_dirt[music_name].stop()

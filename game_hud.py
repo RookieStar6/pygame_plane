@@ -1,5 +1,6 @@
 # 游戏面板，管理状态，分数，炸弹提示，生命条数，文字提示
 from game_items import *
+import json
 
 
 class HUDpanel(object):
@@ -16,7 +17,6 @@ class HUDpanel(object):
     level5_score = 500000
     level6_score = 800000
 
-
     record_filename = "record.txt"
 
     # 所有面板精灵的控制类
@@ -28,7 +28,6 @@ class HUDpanel(object):
         self.best_score = 0
         self.load_best_score()
         # 图像精灵
-
         # 状态按钮
         self.status_sprite = StatusButton(('resume.png', 'pause.png'), display_group)
         self.status_sprite.rect.topleft = (self.margin, self.margin)
@@ -67,11 +66,34 @@ class HUDpanel(object):
         self.tips_label.rect.midtop = (self.best_label.rect.centerx,
                                        self.best_label.rect.bottom + 6 * self.margin)
 
-        self.level_up = Label('Level %d'% self.level, 30, self.white, display_group)
+        self.level_up = Label('Level %d' % self.level, 30, self.white, display_group)
         # self.level_up.rect.right = (SCREEN_RECT.right - self.margin)
         self.level_up.rect.midright = (SCREEN_RECT.right - self.margin,
-                                         self.status_sprite.rect.centery)
+                                       self.status_sprite.rect.centery)
 
+        self.rank_label = Rank('usidahuasihdiuashdi', 48, self.white)
+        self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
+                                          self.best_label.rect.top - 5 * self.margin)
+        # 排名标签
+        rank_list = self.read_rank()
+        for i in rank_list:
+            count =0
+            self.rank_label = Rank(i[0], 48, self.white, display_group)
+            print(i[0])
+            self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
+                                              self.best_label.rect.top - count*5*self.margin)
+            count +=1
+
+    def read_rank(self):
+        fr = open('record2.txt', 'r', encoding='UTF-8')
+        map = {}
+        for line in fr:
+            value = line.strip().split(':')
+            map[value[0]] = value[1]
+        fr.close()
+        list = sorted(map.items(), key=lambda item: item[1], reverse=True)
+        print(list)
+        return list
 
     def change_bomb(self, count):
         self.boom_label.set_text('X %d' % count)
@@ -105,20 +127,20 @@ class HUDpanel(object):
             level = 1
         elif score < self.level3_score:
             level = 2
-        elif score <self.boos1_score:
+        elif score < self.boos1_score:
             level = 3
-        elif score <self.level4_score:
+        elif score < self.level4_score:
             level = 4
-        elif score <self.level5_score:
+        elif score < self.level5_score:
             level = 5
-        elif score <self.level6_score:
+        elif score < self.level6_score:
             level = 6
         # else:
         #     level= 4
         if self.level != level:
             is_update = True
-            print("已升级----，当前关卡 :",level)
-            self.level_up.set_text("Level %d"%level)
+            print("已升级----，当前关卡 :", level)
+            self.level_up.set_text("Level %d" % level)
             self.level_up.rect.midright = (SCREEN_RECT.right - self.margin,
                                            self.status_sprite.rect.centery)
         self.level = level

@@ -5,13 +5,6 @@ from game_music import *
 import random
 
 
-# 非洲人-道具
-# 郭一麟（面板界面 敌军飞机）
-# 朱昶歆 BOSS（BOSS飞机+BOSS子弹）
-# 刘紫昕 （敌军子弹）
-# 江雪嵘（英雄飞机+游戏开始按钮，分数）
-# 胡逸韬（音乐类各种触发事件，游戏开始和结束的回收资源） main-53
-
 class Game(object):
 
     def __init__(self):
@@ -27,11 +20,10 @@ class Game(object):
         self.enemies_group = pygame.sprite.Group()  # 敌军组
         self.supplies_group = pygame.sprite.Group()  # 道具组
         self.boss_group = pygame.sprite.Group()  # boss组
-        self.bg_group = pygame.sprite.Group()
         # 游戏精灵
-        self.b1 =Background(False, self.all_group)  # 背景精灵1
-        self.b2 =Background(True, self.all_group)  # 背景精灵2
-        #self.all_group.add(Background(False), Background(True))  # 添加两个精灵
+        # Background(False, self.all_group)  # 背景精灵1
+        # Background(True, self.all_group)  # 背景精灵2
+        self.all_group.add(Background('bg1.jpg', False), Background('bg1.jpg', True))  # 添加两个精灵
         # myplane = Plane(("me1.png","me2.png"),  self.all_group)
         self.myplane = Hero(self.all_group, self.myplane_group)
 
@@ -40,11 +32,11 @@ class Game(object):
         # 把原来面板上炸弹的数量关联到飞机上
         self.hud_panel.change_bomb(self.myplane.bomb_count)
         # 初始化敌机
-        # self.create_enemies()
+        #self.create_enemies()
         # 初始化boss
 
-        self.boss1 = Boss1(1000, 1, self.boss_group)
-        self.boss2 = Boss2(1000, 1, self.boss_group)
+        self.boss1 = Boss1(500, 1, self.boss_group)
+        self.boss2 = Boss2(500, 1, self.boss_group)
         # 初始化道具
         #self.create_supply()
         # 音乐播放
@@ -75,6 +67,7 @@ class Game(object):
             supply.kill()
         self.create_enemies()
         self.create_supply()
+
     def start(self):
         # 创建时钟
         clock = pygame.time.Clock()
@@ -157,11 +150,10 @@ class Game(object):
                     # 更新得分,如果最新得分应该升级，增加敌机数量
                     if self.hud_panel.increase_score(score):
                         self.create_enemies()
-                        if self.hud_panel.level >=2:
-                            self.b1.remove(self.all_group)
-                            self.b2.remove(self.all_group)
-                            self.b3 = Background2(False, self.all_group)
-                            self.b3 = Background2(True, self.all_group)
+
+                    # if not self.boss_group:
+                    #     self.create_enemies()
+
 
                         # self.enemies_group.empty()
                         # self.create_boss()
@@ -177,7 +169,7 @@ class Game(object):
                     self.myplane.is_power = False
                     pygame.time.set_timer(HERO_ISPOWER_EVENT, 0)
                 elif event.type == THROW_SUPPORT_EVENT:
-                    # 随即给出一个道具
+                    # Choose an item at random
                     self.player.play_sound("supply.wav")
                     supply = random.choice(self.supplies_group.sprites())
                     supply.throw_supply()
@@ -191,14 +183,15 @@ class Game(object):
                     # self.boss1.fire(self.all_group)
                 elif event.type == ENEMY_FIRE_EVENT:
                     for enemy in self.enemies_group:
+                        pass
                         enemy.fire(self.all_group)
                 elif event.type == BOSS_EVENT:
-                    boss_music1 = self.player.play_sound("boss1.mp3")#有问题
-                    if self.boss1.hp >= 0:
-
+                    self.player.pause_music2()
+                    self.player.play_sound("boss1.wav")
+                    if self.boss1.hp > 0:
                         self.boss1.fire(self.all_group)
                     else:
-                        pygame.mixer.music.pause()
+                        self.player.stop_sound("boss1.wav")
                 elif event.type == BOSS2_EVENT:
                     if self.boss2.hp > 0:
                         self.boss2.fire((self.all_group))
@@ -369,9 +362,10 @@ class Game(object):
                 pygame.time.set_timer(BULLET_ENAHCE_EVENT, 12000)
 
     def create_supply(self):
-        # 初始化两个道具，并且开启定时器
+        # Initialize two items and start the timer
         Supply(0, self.all_group, self.supplies_group)
         Supply(1, self.all_group, self.supplies_group)
+        # Start the timer every 15 seconds.
         pygame.time.set_timer(THROW_SUPPORT_EVENT, 15000)
 
 
