@@ -74,7 +74,7 @@ class Hero(Plane):
     def fire(self, display_groups):
         '''
         let the hero equip the bullets to fire
-        :param display_groups: the bullets of hero will be added in
+        :param display_groups: sprite.group
         :return: None
         '''
 

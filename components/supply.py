@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time : 2021/12/8 22:27
-# @Author : Changxin Zhu
 # ide： PyCharm
 
 from components.game_items import *

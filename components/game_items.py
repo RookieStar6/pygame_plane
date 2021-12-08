@@ -30,59 +30,67 @@ class GameSprite(pygame.sprite.Sprite):
 
 
 class StatusButton(GameSprite):
-    # 状态按钮精灵
+    # button sprite
     def __init__(self, image_names, *group):
-        # 第一个参数是一个元组，下标为0是暂停的图片，下标为1是运行的图片
+        # image_names:tuple
+        # image_names[0]: play image_names[1]: pause
         super(StatusButton, self).__init__(image_names[0], 0, *group)
-        # 准备用于切换的两个图片
+
         self.images = [pygame.image.load(self.image_path + name) for name in image_names]
 
     def switch_status(self, is_pause):
+        '''
+        switch two images according to the pause button
+        :param is_pause: bool
+        :return: None
+        '''
         self.image = self.images[1 if is_pause else 0]
 
 
 class Label(pygame.sprite.Sprite):
-    # 标签类精灵
+
     font_path = './resource/font/font.ttf'
 
     def __init__(self, text, size, color, *groups):
         super(Label, self).__init__(*groups)
 
-        # 创建字体对象
         self.font = pygame.font.Font(self.font_path, size)
 
-        # 字体颜色
         self.color = color
 
-        # 精灵属性
         self.image = self.font.render(text, True, self.color)
         self.rect = self.image.get_rect()
 
     def set_text(self, text):
-        # 更新显示文本
+        '''
+        update the contents of sprite
+        :param text: str
+        :return: None
+        '''
         self.image = self.font.render(text, True, self.color)
         self.rect = self.image.get_rect()
 
 
 class Rank(pygame.sprite.Sprite):
-    # 标签类精灵
+
     font_path = './resource/font/font.ttf'
 
     def __init__(self, text, size, color, *groups):
         super(Rank, self).__init__(*groups)
 
-        # 创建字体对象
         self.font = pygame.font.Font(self.font_path, size)
 
-        # 字体颜色
         self.color = color
 
-        # 精灵属性
         self.image = self.font.render(text, True, self.color)
         self.rect = self.image.get_rect()
 
     def set_text(self, text):
-        # 更新显示文本
+        '''
+        update the contents of sprite
+        :param text: str
+        :return: None
+        '''
         self.image = self.font.render(text, True, self.color)
         self.rect = self.image.get_rect()
 
@@ -142,28 +150,30 @@ class Plane(GameSprite):
         self.image = self.normal_images[0]
 
     def update(self, *args):
-        # 判断0号下标传过来的是不是True
+        '''
+        update the animation
+        :param args[0]: bool
+        :return: None
+        '''
         if not args[0]:
             return
         if self.hp == self.max_hp:
-            # 切换要显示的图片
             self.image = self.normal_images[self.normal_index]
 
-            # 计算下一次索引 ,防止数组越界，取余数
+            #get next index by using a remainder to prevent loop is out of index
             count = len(self.normal_images)
             self.normal_index = (self.normal_index + 1) % count
         elif self.hp > 0:
-            # 受伤
+            # hurt
             self.image = self.hurt_images[self.hurt_index]
             count = len(self.hurt_images)
             self.hurt_index = (self.hurt_index + 1) % count
         else:
-            # 死亡
+            # death
             if self.destroy_index < len(self.destroy_images):
                 self.image = self.destroy_images[self.destroy_index]
-                # 死亡图片只需要轮播一次，不需要像玩家飞机一样不停的轮播
                 self.destroy_index += 1
-            else:  # 此时destroy数组下标已经到达最大值
+            else:
                 self.reset_plane()
 
 
