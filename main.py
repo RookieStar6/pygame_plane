@@ -35,8 +35,8 @@ class Game(object):
         #self.create_enemies()
         # 初始化boss
 
-        self.boss1 = Boss1(500, 1, self.boss_group)
-        self.boss2 = Boss2(500, 1, self.boss_group)
+        self.boss1 = Boss1(1000, 1, self.boss_group)
+        self.boss2 = Boss2(1000, 1, self.boss_group)
         # 初始化道具
         #self.create_supply()
         # 音乐播放
@@ -67,7 +67,6 @@ class Game(object):
             supply.kill()
         self.create_enemies()
         self.create_supply()
-
     def start(self):
         # 创建时钟
         clock = pygame.time.Clock()
