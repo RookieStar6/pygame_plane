@@ -1,5 +1,5 @@
 # 游戏面板，管理状态，分数，炸弹提示，生命条数，文字提示
-from game_items import *
+from components.game_items import *
 import json
 
 

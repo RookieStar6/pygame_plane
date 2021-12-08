@@ -1,8 +1,3 @@
-# 英雄飞机，敌机，子弹，道具等
-# 1.子类可以重写update方法
-# 2.子类必须给image和rect属性赋值
-# 3.初始化方法能够接受任意数量的精灵组对象 作为参数，以将创建完的精灵对象添加到这些指定的精灵组中
-# 4.子类的初始化方法中，必须调用父类的初始化方法，才能向精灵组中添加精灵
 import pygame
 import random
 
@@ -131,26 +126,27 @@ class Rank(pygame.sprite.Sprite):
 
 
 class Plane(GameSprite):
+    '''
+    three types of images need to be loaded
+    scale_imagename and scale are used to resize the images, including four kinds of input: None-no images need to process
+     n-normal_images, h-hurt_images, d-destroy_images
+    '''
     def __init__(self, normal_names, speed, hp, value, wav_name, hurt_image_name, destroy_names, *groups,
                  scale_imagename='', scale=1):
-        # scale_imagename: 需要做缩放的图片代号n-normal_images, h-hurt_images, d-destroy_images
-        # scale: 缩放比例
-        # 飞机类的初始化
-        super(Plane, self).__init__(normal_names[0], speed, *groups)
-        # 飞机基本属性
-        self.hp = hp  # 当前生命值
-        self.max_hp = hp  # 最大生命值
-        self.value = value  # 分值
-        self.wav_name = wav_name  # 音效名称
 
-        # 飞机要显示的图片
+        super(Plane, self).__init__(normal_names[0], speed, *groups)
+
+        self.hp = hp  # current health value
+        self.max_hp = hp  # the maxmium health value
+        self.value = value  # score
+        self.wav_name = wav_name  # bgm
+
         self.normal_images = [pygame.image.load(self.image_path + name) for name in normal_names]
         self.normal_index = 0
 
-        # 受伤的图片路径
         self.hurt_images = [pygame.image.load(self.image_path + hurt_image_name) for hurt_image_name in hurt_image_name]
         self.hurt_index = 0
-        # 销毁的图片列表
+
         self.destroy_images = [pygame.image.load(self.image_path + name) for name in destroy_names]
         self.destroy_index = 0
 
@@ -171,7 +167,10 @@ class Plane(GameSprite):
                                                                 (int(rect.width * scale), int(rect.h * scale)))
 
     def reset_plane(self):
-        # 重置飞机
+        '''
+        reset the attributes
+        :return: None
+        '''
         self.hp = self.max_hp
 
         self.normal_index = 0
@@ -206,87 +205,17 @@ class Plane(GameSprite):
                 self.reset_plane()
 
 
-class Enemy(Plane):
-    # 初始化敌机
-    def __init__(self, kind, max_speed, *group):
-        self.kind = kind
-        self.max_speed = max_speed
-        self.bullets_groups = pygame.sprite.Group()  # 子弹精灵类
-        if kind == 0:
-            # 小敌机
-            super(Enemy, self).__init__(
-                ['enemy1.png', 'enemy2.png'], 1, 1, 1000, 'enemy1_down.wav', ['enemy1.png', 'enemy2.png'],
-                ['plane_destroy%d.png' % x for x in range(1, 6)],
-                *group
-            )
-        elif kind == 1:
-            # 中敌机
-            super(Enemy, self).__init__(
-                ['tallenemy1.png', 'tallenemy2.png'], 1, 6, 6000, 'enemy2_down.wav',
-                ['tallenemy1.png', 'tallenemy2.png'],
-                ['plane_destroy%d.png' % x for x in range(1, 6)],
-                *group
-            )
-        elif kind == 2:
-            # 大敌机
-            super(Enemy, self).__init__(
-                ['ventienemy1.png', 'ventienemy2.png'], 1, 15, 15000, 'enemy3_down.wav',
-                ['ventienemy1.png', 'ventienemy2.png'],
-                ['plane_destroy%d.png' % x for x in range(1, 6)],
-                *group
-            )
-        if self.kind == 0:
-            pygame.time.set_timer(ENEMY_FIRE_EVENT, 1300)
-        elif self.kind == 1:
-            pygame.time.set_timer(ENEMY_FIRE_EVENT, 1600)
-        elif self.kind == 2:
-            pygame.time.set_timer(ENEMY_FIRE_EVENT, 1600)
-        self.reset_plane()
 
-    def reset_plane(self):
-        # 重置敌人飞机
-        super(Enemy, self).reset_plane()
-
-        # 敌人飞机的数据重置
-        x = random.randint(0, SCREEN_RECT.w - self.rect.w)
-        y = random.randint(0, SCREEN_RECT.h - self.rect.h) - SCREEN_RECT.h
-        self.rect.topleft = (x, y)
-
-        # 重置飞机速度
-        self.speed = random.randint(1, self.max_speed)
-
-    def update(self, *args):
-        super(Enemy, self).update(*args)
-
-        # 根据血量判断是否需要移动
-        if self.hp > 0:
-            self.rect.y += self.speed
-
-        # 如果移动到了屏幕之外，需要重置飞机
-        if self.rect.y >= SCREEN_RECT.h:
-            self.reset_plane()
-
-    def fire(self, display_groups):
-        # 准备要显示的组
-        groups = (display_groups, self.bullets_groups)
-        if self.rect.y > 0:
-            # 创建子弹并且确定位置
-            for i in range(1):
-                bullet1 = EnemyBullet(self.kind, 1, *groups)
-                if self.kind == 3:
-                    y = self.rect.y + 30
-                else:
-                    y = self.rect.y + 15
-                    bullet1.rect.midbottom = (self.rect.centerx, y)
 
 
 class Hero(Plane):
     def __init__(self, *groups):
-        # 初始化英雄飞机
-        self.is_power = False  # 是否无敌
-        self.bomb_count = HERO_BOMB_COUNT
-        self.bullets_kind = 9  # 子弹类型
-        self.bullets_groups = pygame.sprite.Group()  # 子弹精灵类
+        #the player
+        self.is_power = False  #  the flag of is powerful
+        self.bomb_count = HERO_BOMB_COUNT # a event to record the number of bomb
+        self.bullets_kind = 9  # initial bullets type
+        self.bullets_groups = pygame.sprite.Group()
+        #initialize the hero
         super(Hero, self).__init__(["player%d.png" % i for i in range(1, 3)],
                                    0, 180, 0, "me_down.wav", ["player%d.png" % i for i in range(1, 3)],
                                    ["plane_destroy%d.png" % x for x in range(1, 6)],
@@ -294,10 +223,14 @@ class Hero(Plane):
 
         self.rect.midbottom = HERO_DEFAULT_POSITION
 
-        # 创建玩家后，触发子弹事件
         pygame.time.set_timer(HERO_FIRE_EVENT, 200)
 
     def update(self, *args):
+        '''
+        update the animation of hero
+        :param args:
+        :return: None
+        '''
         super(Hero, self).update(*args)
         self.rect.x += args[1] * 7
         self.rect.left = 0 if self.rect.left < 0 else self.rect.left
@@ -308,12 +241,16 @@ class Hero(Plane):
         self.rect.bottom = SCREEN_RECT.bottom if self.rect.bottom > SCREEN_RECT.bottom else self.rect.bottom
 
     def boom(self, enemies_groups):
-        # 炸毁所有敌机，并且返回总得分
-        # 判断是否可以引爆炸弹
+        '''
+        destroy all the enemies displayed, and return the score
+        :param enemies_groups: including the enemies displayed in the win
+        :return: int
+        '''
+
+        # judge if hero has enough bombs
         if self.bomb_count <= 0 or self.hp <= 0:
             return 0
 
-        # 否则引爆敌机
         self.bomb_count -= 1
         score = 0
         for i in enemies_groups.sprites():
@@ -321,28 +258,32 @@ class Hero(Plane):
                 score += i.value
                 i.hp = 0
 
-        # boss group
-
         return score
 
     def reset_plane(self):
+        '''
+        reset the attributes of hero
+        :return: None
+        '''
         super(Hero, self).reset_plane()
 
-        # 重写自己的方法
         self.is_power = True
         self.bomb_count = HERO_BOMB_COUNT
         self.bullets_kind = 9
 
-        # 数据重置完后，发布事件.
         pygame.event.post(pygame.event.Event(HERO_DEAD_EVENT))
 
-        # 发布无敌事件
         pygame.time.set_timer(HERO_ISPOWER_EVENT, 3000)
 
     def fire(self, display_groups):
-        # 准备要显示的组
+        '''
+        let the hero equip the bullets to fire
+        :param display_groups: the bullets of hero will be added in
+        :return: None
+        '''
+
         groups = (display_groups, self.bullets_groups)
-        # 创建子弹并且确定位置
+
         for i in range(3):
             bullet1 = Bullet(self.bullets_kind, *groups)
             y = self.rect.y - i * 15
@@ -351,10 +292,7 @@ class Hero(Plane):
 
 class Bullet(GameSprite):
     def __init__(self, kind, *group):
-        # 初始化子弹数据
-        # image_name = "bullet1.png" if kind == 0 else "bullet3.png"
-        # 所有敌机和Boss的子弹图片加载
-
+        #include all types of bullets used by hero, enemy, boss1, boss2
         if kind == 0:
             image_name = "bullet1.png"
         elif kind == 1:
@@ -383,10 +321,13 @@ class Bullet(GameSprite):
         self.damage = 1
 
     def update(self, *args):
-        # 更新子弹的数据
+        '''
+        update the animation of bullets
+        :param args:
+        :return: None
+        '''
         super(Bullet, self).update(*args)
 
-        # 飞出屏幕之外的子弹销毁
         if self.rect.bottom < 0:
             self.kill()
 
@@ -397,6 +338,11 @@ class EnemyBullet(Bullet):
         self.damage = damage
 
     def update(self, *args):
+        '''
+        update the animation of enemy bullets
+        :param args:
+        :return: None
+        '''
         self.rect.y -= 0.45 * self.speed
 
 
@@ -411,20 +357,25 @@ class Boss1(Plane):
             ['boss1/boss_destroy%d.png' % x for x in range(1, 5)],
             *group, scale_imagename='d', scale=0.22)
 
-        # boss出生位置，然后移动至屏幕内
+        # the initial position of Boss1
         self.rect.centerx = SCREEN_RECT.centerx
         self.rect.y = -self.rect.h
 
     def update(self, *args):
+        '''
+        update the animation of boss, the boss will move to the specific position according to the different health status
+        :param args:
+        :return: None
+        '''
         super(Boss1, self).update(*args)
-        hp_percentage = self.hp / self.max_hp  # 血量百分比
-        # boss入场
+        hp_percentage = self.hp / self.max_hp  # the percentage of health
+        # the appearance of boss
         if self.rect.y == 0:
             pygame.time.set_timer(BOSS_EVENT, 200)
 
         if self.rect.y <= 20:
             self.rect.y += 1
-        # boss在不同血量情形下，移动至不同位置
+
         if hp_percentage >= 0.6 and hp_percentage <= 0.8:
             if self.rect.y <= SCREEN_RECT.h / 2:
                 self.rect.y += 1
@@ -434,12 +385,16 @@ class Boss1(Plane):
                 self.rect.y -= 1
 
     def fire(self, display_groups):
-
+        '''
+        the boss will have specific attack modes according to the different health status
+        :param display_groups: the bullets of boss will be added in
+        :return: None
+        '''
         groups = (display_groups, self.bullets_groups)
-        hp_percentage = self.hp / self.max_hp  # 血量百分比
-        print(hp_percentage)
+        hp_percentage = self.hp / self.max_hp
+        print(self.hp)
         if (hp_percentage > 0.8 and hp_percentage <= 1) or (hp_percentage > 0.4 and hp_percentage <= 0.6):
-            # 第一种攻击模式
+            # the first attack mode
             for i in range(10):
                 boss_bullet1 = BossBullet(3, i, *groups)
                 y = self.rect.y + self.rect.h / 2 + 20
@@ -449,14 +404,14 @@ class Boss1(Plane):
                 boss_bullet2.rect.midbottom = (self.rect.centerx, y)
 
         elif hp_percentage >= 0.6 and hp_percentage <= 0.8:
-            # 第二种攻击模式， 激光
+            # the second attack mode, laser
             boss_bullet1 = BossBullet(6, 0, *groups)
             y = self.rect.y + self.rect.h
             boss_bullet1.rect.midbottom = (self.rect.centerx, y)
 
 
         elif hp_percentage >= 0 and hp_percentage <= 0.4:
-            # 第三种攻击模式
+            # the third attack mode
             boss_bullet1 = BossBullet(3, 0, *groups)
             y = self.rect.y + self.rect.h / 2 + 20
             boss_bullet1.rect.midbottom = (self.rect.centerx, y)
@@ -475,6 +430,15 @@ class Boss1(Plane):
             y = self.rect.y + self.rect.h
             boss_bullet5.rect.midbottom = (self.rect.centerx, y)
 
+    def reset(self):
+        '''
+        reset the attributes of boss
+        :return:
+        '''
+        self.hp = self.max_hp
+        self.rect.centerx = SCREEN_RECT.centerx
+        self.rect.y = -self.rect.h
+
 
 class Boss2(Plane):
     def __init__(self, max_hp, max_speed, *group):
@@ -486,23 +450,26 @@ class Boss2(Plane):
             ['plane_destroy%d.png' % x for x in range(1, 6)],
             *group)
 
-        # boss出生位置，然后移动至屏幕内
         self.rect.centerx = SCREEN_RECT.centerx
         self.rect.y = -self.rect.h
 
     def update(self, *args):
+        '''
+        update the animation of boss, the boss will move to the specific position according to the different health status
+        :param args:
+        :return: None
+        '''
         super(Boss2, self).update(*args)
         if self.rect.y == 0:
             pygame.time.set_timer(BOSS2_EVENT, 200)
-        hp_percentage = self.hp / self.max_hp  # 血量百分比
-        # boss入场
+        hp_percentage = self.hp / self.max_hp
+
         if self.rect.y <= 20:
             self.rect.y += 1
-        # boss在不同血量情形下，移动至不同位置
+
         if hp_percentage >= 0.9 and hp_percentage <= 1:
             if self.rect.x <= SCREEN_RECT.right - self.rect.x - 20:
                 self.rect.x += 1
-                # self.rect.x += 0.5
 
         elif hp_percentage >= 0.8 and hp_percentage <= 0.9:
             if self.rect.x >= 0:
@@ -520,12 +487,16 @@ class Boss2(Plane):
                 self.rect.y += 1
 
     def fire(self, display_groups):
-
+        '''
+        the boss will have specific attack modes according to the different health status
+        :param display_groups: the bullets of boss will be added in
+        :return: None
+        '''
         groups = (display_groups, self.bullets_groups)
         hp_percentage = self.hp / self.max_hp  # 血量百分比
         print(hp_percentage)
         if (hp_percentage > 0.9 and hp_percentage <= 1):
-            # 第一种攻击模式
+            # the first attack mode
             for i in range(5):
                 boss_bullet1 = BossBullet(7, 0, *groups)
                 y = self.rect.y + self.rect.h / 2 + 20
@@ -563,7 +534,14 @@ class Boss2(Plane):
                 boss_bullet1 = BossBullet(3, i, *groups)
                 y = self.rect.y + self.rect.h / 2 + 20
                 boss_bullet1.rect.midbottom = (self.rect.centerx, y)
-
+    def reset(self):
+        '''
+        reset the attributes of Boss2
+        :return: None
+        '''
+        self.hp = self.max_hp
+        self.rect.centerx = SCREEN_RECT.centerx
+        self.rect.y = -self.rect.h
 
 class BossBullet(Bullet):
 
@@ -571,14 +549,18 @@ class BossBullet(Bullet):
 
         self.kind = kind
         super(BossBullet, self).__init__(kind, *group)
-        self.count = 0.05  # 为一个子弹对象，绘制弧形
-        self.count_y = 4  # 为一个子弹对象，绘制弧形
-        self.differ = differ  # 增加子弹水平偏移量
+        self.count = 0.05  # can be used for draw a curve
+        self.count_y = 4  #  can be used for draw a curve
+        self.differ = differ  #  can be used for adding a deviation in x-axis
 
     def update(self, *args):
-        # super(BossBullet, self).update(*args)
+        '''
+        update the animation of Boss bullets
+        :param args:
+        :return: None
+        '''
         if self.kind == 3:
-            self.rect.x += -4 - self.differ + self.count  # A BUG!
+            self.rect.x += -4 - self.differ + self.count
             self.rect.y -= self.speed * 0.05 * self.count_y
             self.count += 0.05
 
@@ -588,7 +570,7 @@ class BossBullet(Bullet):
             self.count += 0.05
 
         elif self.kind == 5:
-            # boss两侧投掷炸弹
+            # throw the bombs
             self.rect.x += random.randint(-5, 5) * 0.5
             self.rect.y -= self.speed * 0.05 * self.count_y
             self.count += 0.05
@@ -599,7 +581,6 @@ class BossBullet(Bullet):
             self.count += 0.05
 
         elif self.kind == 7:
-
             self.rect.x += 0.1
             self.rect.y -= self.speed * 0.05 * self.count_y
 
@@ -607,11 +588,6 @@ class BossBullet(Bullet):
             self.rect.x += 5 + self.differ - self.count
             self.count += 0.05
 
-        elif self.kind == 9:
-            pass
-
-        elif self.kind == 10:
-            pass
 
         if self.rect.bottom > SCREEN_RECT.h:
             self.kill()
