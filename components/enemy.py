@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ide： PyCharm
-from game_items import Plane
-
+from components.game_items import *
+from components.bullet import *
+from states.constant import *
 
 class Enemy(Plane):
 

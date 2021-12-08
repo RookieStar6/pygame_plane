@@ -1,13 +1,9 @@
-# 游戏面板，管理状态，分数，炸弹提示，生命条数，文字提示
 from components.game_items import *
+from states.constant import *
 import json
 
-
 class HUDpanel(object):
-    margin = 10  # 精灵的距离
-    white = (255, 255, 255)
-    gray = (64, 64, 64)
-    black = (0, 0, 0)
+    margin = 10  # a constant to control the position of sprite
 
     reward_score = 100000
     level2_score = 10000
@@ -38,15 +34,15 @@ class HUDpanel(object):
         self.boom_sprite.rect.bottom = SCREEN_RECT.height - self.margin
 
         # 得分标签
-        self.score_label = Label('%d' % self.score, 50, self.white, display_group)
+        self.score_label = Label('%d' % self.score, 50, WHITE, display_group)
         self.score_label.rect.midleft = (self.status_sprite.rect.right + self.margin,
                                          self.status_sprite.rect.centery)
         # 炸弹计数标签
-        self.boom_label = Label('X 3', 32, self.white, display_group)
+        self.boom_label = Label('X 3', 32, WHITE, display_group)
         self.boom_label.rect.midleft = (self.boom_sprite.rect.right + self.margin,
                                         self.boom_sprite.rect.centery)
         # 生命计数标签
-        self.live_label = Label('X %d' % self.lives_count, 32, self.white, display_group)
+        self.live_label = Label('X %d' % self.lives_count, 32, WHITE, display_group)
         self.live_label.rect.midright = (SCREEN_RECT.right - self.margin,
                                          self.boom_sprite.rect.centery)
         # 底部生命精灵
@@ -55,30 +51,30 @@ class HUDpanel(object):
         self.lives_sprite.rect.bottom = SCREEN_RECT.height - self.margin
 
         # 最好成绩标签
-        self.best_label = Label('Best: %d' % self.best_score, 36, self.white)
+        self.best_label = Label('Best: %d' % self.best_score, 36, WHITE)
         self.best_label.rect.center = SCREEN_RECT.center
         # 状态标签
-        self.status_label = Label('Game Paused', 48, self.white)
+        self.status_label = Label('Game Paused', 48, WHITE)
         self.status_label.rect.midbottom = (self.best_label.rect.centerx,
                                             self.best_label.rect.top - 4 * self.margin)
         # 提示标签
-        self.tips_label = Label('Press spacebar to  continue', 22, self.white)
+        self.tips_label = Label('Press spacebar to  continue', 22, WHITE)
         self.tips_label.rect.midtop = (self.best_label.rect.centerx,
                                        self.best_label.rect.bottom + 6 * self.margin)
 
-        self.level_up = Label('Level %d' % self.level, 30, self.white, display_group)
+        self.level_up = Label('Level %d' % self.level, 30, WHITE, display_group)
         # self.level_up.rect.right = (SCREEN_RECT.right - self.margin)
         self.level_up.rect.midright = (SCREEN_RECT.right - self.margin,
                                        self.status_sprite.rect.centery)
 
-        self.rank_label = Rank('usidahuasihdiuashdi', 48, self.white)
+        self.rank_label = Rank('usidahuasihdiuashdi', 48, WHITE)
         self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
                                           self.best_label.rect.top - 5 * self.margin)
         # 排名标签
         rank_list = self.read_rank()
         for i in rank_list:
             count =0
-            self.rank_label = Rank(i[0], 48, self.white, display_group)
+            self.rank_label = Rank(i[0], 48, WHITE, display_group)
             print(i[0])
             self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
                                               self.best_label.rect.top - count*5*self.margin)
@@ -139,7 +135,6 @@ class HUDpanel(object):
         #     level= 4
         if self.level != level:
             is_update = True
-            print("已升级----，当前关卡 :", level)
             self.level_up.set_text("Level %d" % level)
             self.level_up.rect.midright = (SCREEN_RECT.right - self.margin,
                                            self.status_sprite.rect.centery)

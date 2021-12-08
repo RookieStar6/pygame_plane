@@ -1,4 +1,3 @@
-# 音乐模块
 import pygame
 import os
 

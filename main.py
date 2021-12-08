@@ -1,59 +1,62 @@
 import pygame
 from game_hud import *
+from states.constant import *
+from states.menu import *
 from components.game_items import *
-from game_music import *
+from components.background import *
+from components.hero import *
 from components.enemy import *
+from components.boss import *
+from components.supply import *
+from game_music import *
 import random
 
 
 class Game(object):
 
     def __init__(self):
-        # 游戏窗口
+        # win
         self.main_window = pygame.display.set_mode(SCREEN_RECT.size)
         pygame.display.set_caption("飞机大战")
-        # 游戏状态
+        # status
         self.is_game_over = False
         self.is_game_pause = False
         self.is_boss_kill = False
-        # 精灵组
-        self.myplane_group = pygame.sprite.Group()  # 玩家组
-        self.all_group = pygame.sprite.Group()  # 全部组
-        self.enemies_group = pygame.sprite.Group()  # 敌军组
-        self.supplies_group = pygame.sprite.Group()  # 道具组
-        self.boss_group = pygame.sprite.Group()  # boss组
+        # sprite group
+        self.myplane_group = pygame.sprite.Group()  # player
+        self.all_group = pygame.sprite.Group()  # all sprited
+        self.enemies_group = pygame.sprite.Group()  # enemy
+        self.supplies_group = pygame.sprite.Group()  # supply
+        self.boss_group = pygame.sprite.Group()  # boss
 
         # Menu
 
-        # 游戏精灵
-        # Background(False, self.all_group)  # 背景精灵1
-        # Background(True, self.all_group)  # 背景精灵2
-        self.all_group.add(Background('bg1.jpg', False), Background('bg1.jpg', True))  # 添加两个精灵
-        # myplane = Plane(("me1.png","me2.png"),  self.all_group)
+        #background
+        self.all_group.add(Background('bg1.jpg', False), Background('bg1.jpg', True))
 
         self.menu = Menu()
         self.all_group.add(self.menu)
-
+        #hero
         self.myplane = Hero(self.all_group, self.myplane_group)
 
-        # 创建游戏控制面板
+        # game panel
         self.hud_panel = HUDpanel(self.all_group)
-        # 把原来面板上炸弹的数量关联到飞机上
-        self.hud_panel.change_bomb(self.myplane.bomb_count)
-        # 初始化敌机
-        #self.create_enemies()
-        # 初始化boss
 
+        # update the number of bomb
+        self.hud_panel.change_bomb(self.myplane.bomb_count)
+
+        #initialize the boss
         self.boss1 = Boss1(1000, 1, self.boss_group)
         self.boss2 = Boss2(1000, 1, self.boss_group)
-        # 初始化道具
+        # initialize the supply
         #self.create_supply()
-        # 音乐播放
+
+        # background music
         self.player = MusicPlayer('game_music.ogg')
         self.player.play_music()
 
     def rest_game(self):
-        # 重置游戏数据
+
         self.is_game_over = False
         self.is_game_pause = False
         self.is_boss_kill = False
