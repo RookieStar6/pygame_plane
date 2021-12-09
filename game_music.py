@@ -1,4 +1,3 @@
-# 音乐模块
 import pygame
 import os
 
@@ -10,7 +9,7 @@ class MusicPlayer(object):
         # 初始化音乐播放器
         # 背景音乐
         pygame.mixer.music.load(self.res_path + music_file)
-        pygame.mixer.music.set_volume(0.2)
+        pygame.mixer.music.set_volume(1)
 
         # 初始化音效字典
         self.sound_dirt = {}
@@ -35,6 +34,12 @@ class MusicPlayer(object):
         else:
             pygame.mixer.music.unpause()
 
+    @staticmethod
+    def pause_music2():
+        pygame.mixer.music.pause()
+
     # 根据map 的key值(文件名)，直接播放音乐
     def play_sound(self, music_name):
         self.sound_dirt[music_name].play()
+    def stop_sound(self, music_name):
+        self.sound_dirt[music_name].stop()
