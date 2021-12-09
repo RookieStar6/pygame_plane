@@ -15,7 +15,7 @@ import  time
 class Game(object):
 
     def __init__(self):
-        # win
+        # win3hihdihd
         self.main_window = pygame.display.set_mode(SCREEN_RECT.size)
         pygame.display.set_caption("飞机大战")
         # status
