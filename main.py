@@ -78,9 +78,11 @@ class Game(object):
         self.menu_record =Menu_record()
         self.all_group.add(self.menu_record)
         self.back_button_sprite = BackButton('back_button.png')
-        self.back_button_sprite.rect.centery, self.back_button_sprite.rect.centery = 20, 30
+        self.back_button_sprite.rect.right, self.back_button_sprite.rect.centery = SCREEN_RECT.right - 10, 30
         self.help = Help()
         self.all_group.add(self.help)
+        self.help_information = Help_information()
+        self.help_bg = Background2('bg.png')
         self.click_flag=True
 
     def rest_game(self):
@@ -144,11 +146,17 @@ class Game(object):
                     time.sleep(0.05)
                     self.hud_panel.show_rank(self.all_group)
                     self.all_group.add(self.back_button_sprite)
+                elif self.help.rect.left < self.pos[0] < self.help.rect.right and self.help.rect.top < self.pos[1] < self.help.rect.bottom:
+                    self.all_group.add(self.help_bg)
+                    self.all_group.add(self.help_information)
+                    self.all_group.add(self.back_button_sprite)
                 if self.back_button_sprite.rect.left < self.pos[0] < self.back_button_sprite.rect.right:
                     for i in self.bg2_group:
                         i.kill()
                     self.hud_panel.delete_rankpanel(self.all_group)
                     self.all_group.remove(self.back_button_sprite)
+                    self.all_group.remove(self.help_information)
+                    self.all_group.remove(self.help_bg)
                     self.click_flag =True
 
             # 处理事件监听
@@ -165,7 +173,7 @@ class Game(object):
             if self.is_game_over:
                 # 显示面板中央的一些提示信息， 暂停和结束 有不同的提示
                 self.hud_panel.panel_paused(True, self.all_group)
-                self.pos = ()
+
             elif self.is_game_pause:
                 self.hud_panel.panel_paused(False, self.all_group)
             else:
@@ -270,14 +278,14 @@ class Game(object):
         group = (self.all_group, self.enemies_group)
         # 根据不同的关卡创建不同数量的敌机
         if self.hud_panel.level == 1 and count == 0:
-            # 关卡1
+            # level 1
             for i in range(0, 5):
                 Enemy(0, 3, *group)
             for i in range(3):
                 Enemy(1, 1, *group)
 
         elif self.hud_panel.level == 2:
-            # 关卡2
+            # level 2
             for enemy in self.enemies_group.sprites():
                 enemy.max_speed = 5
 
@@ -289,6 +297,7 @@ class Game(object):
                 Enemy(2, 1, *group)
 
         elif self.hud_panel.level == 3:
+            # level 3
             for enemy in self.enemies_group.sprites():
                 enemy.max_speed = 7 if enemy.kind == 0 else 3
             for i in range(8):
@@ -298,32 +307,38 @@ class Game(object):
             for i in range(2):
                 Enemy(2, 1, *group)
         elif self.hud_panel.level == 4:
+            # level 4
             for enemy in self.enemies_group:
                 enemy.kill()
 
             for enemy in self.enemies_group:
                 for bullet in enemy.bullets_groups:
                     bullet.kill()
-
+            #boss 1 appears
             self.all_group.add(self.boss1)
             if not self.boss_group:
                 self.boss_group.add(self.boss1)
                 self.boss_group.add(self.boss2)
             self.is_boss_kill = True
         elif self.hud_panel.level == 5 and self.boss1.hp <= 0:
-            for i in range(0, 5):
+            # level 5
+            for i in range(0, 7):
                 Enemy(0, 4, *group)
             for i in range(3):
                 Enemy(1, 2, *group)
+            for i in range(1):
+                Enemy(2, 2, *group)
         elif self.hud_panel.level == 6:
             for enemy in self.enemies_group:
                 enemy.kill()
-
             for enemy in self.enemies_group:
                 for bullet in enemy.bullets_groups:
                     bullet.kill()
-
             self.all_group.add(self.boss2)
+
+        elif self.hud_panel.level == 7:
+            self.ending = congratulation(self.all_group)
+
     def create_boss(self):
 
         group = (self.all_group, self.boss_group)
@@ -332,13 +347,15 @@ class Game(object):
             Boss1(1, 100, 1, *group)
 
     def check_collide(self):
-        # 先检查是否无敌
+        '''
+        check whether there is a collide among hero, enemy, boss, hero bullet, enemy bullet and boss bullet
+        :return: None
+        '''
         if self.myplane.is_power:
             return
-        # 最后一个参数如果是pygame.sprite.collide_mask，可以实现高品质碰撞检测。 无视透明部分。
+        # collide mask is used to improve the efficiency of collide check
         collide_list = pygame.sprite.spritecollide(self.myplane, self.enemies_group, False, pygame.sprite.collide_mask)
-
-        # 利用filter自带的函数，把爆炸之后的飞机移除列表.防止飞机残骸损伤飞机
+        # the plane will be removed directly when it is destroyed
         collide_list = list(filter(lambda x: x.hp > 0, collide_list))
         # 销毁敌人飞机
         for i in collide_list:
@@ -366,7 +383,10 @@ class Game(object):
                         self.myplane.hp = 0
 
         # boss子弹和玩家碰撞
-        hit_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss1.bullets_groups,
+        hit1_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss1.bullets_groups,
+                                              False, False, pygame.sprite.collide_mask)
+
+        hit2_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss2.bullets_groups,
                                               False, False, pygame.sprite.collide_mask)
 
         hero_boss_hit = pygame.sprite.groupcollide(self.myplane_group, self.boss_group,
@@ -376,9 +396,11 @@ class Game(object):
             self.myplane.hp -= 1
 
 
-        if len(hit_hero) > 0:
+        if len(hit1_hero) > 0:
             self.myplane.hp = 0
 
+        if len(hit2_hero) > 0:
+            self.myplane.hp = 0
 
         for boss in hit_boss:
             if boss.hp > 0:
@@ -386,11 +408,11 @@ class Game(object):
                     boss.hp -= bullet.damage
                     bullet.kill()
             elif boss.hp <= 0:
-                boss.kill()
-                self.boss_group.remove()
+
                 if self.hud_panel.increase_score(boss.value):
                     self.create_enemies()
-
+                boss.kill()
+                self.boss_group.remove()
                 # new_level = pygame.event.Event(NEW_LEVEL_EVENT)
                 # pygame.event.post(new_level)
             # if self.hud_panel.increase_score(boss.value):

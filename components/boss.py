@@ -51,7 +51,6 @@ class Boss1(Plane):
         '''
         groups = (display_groups, self.bullets_groups)
         hp_percentage = self.hp / self.max_hp
-        print(self.hp)
         if (hp_percentage > 0.8 and hp_percentage <= 1) or (hp_percentage > 0.4 and hp_percentage <= 0.6):
             # the first attack mode
             for i in range(10):
@@ -101,11 +100,11 @@ class Boss1(Plane):
 
 class Boss2(Plane):
     def __init__(self, max_hp, max_speed, *group):
-        self.value = 150000
+        self.value = 300000
         self.bullets_groups = pygame.sprite.Group()
         super(Boss2, self).__init__(
             ['boss2/boss%d.png' % x for x in range(1, 6)],
-            1, max_hp, 10000, 'enemy1_down.wav', ['boss2/boss%d.png' % x for x in range(1, 6)],
+            1, max_hp, self.value, 'enemy1_down.wav', ['boss2/boss%d.png' % x for x in range(1, 6)],
             ['plane_destroy%d.png' % x for x in range(1, 6)],
             *group)
 
@@ -122,7 +121,7 @@ class Boss2(Plane):
         if self.rect.y == 0:
             pygame.time.set_timer(BOSS2_EVENT, 200)
         hp_percentage = self.hp / self.max_hp
-
+        print(self.hp)
         if self.rect.y <= 20:
             self.rect.y += 1
 
@@ -153,7 +152,7 @@ class Boss2(Plane):
         '''
         groups = (display_groups, self.bullets_groups)
         hp_percentage = self.hp / self.max_hp  # 血量百分比
-        print(hp_percentage)
+        print(self.hp)
         if (hp_percentage > 0.9 and hp_percentage <= 1):
             # the first attack mode
             for i in range(5):

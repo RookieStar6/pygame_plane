@@ -156,6 +156,8 @@ class HUDpanel(object):
             level = 5
         elif score < self.level6_score:
             level = 6
+        else:
+            level = 7
         # else:
         #     level= 4
         if self.level != level:
