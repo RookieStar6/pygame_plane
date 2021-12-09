@@ -109,8 +109,7 @@ class HUDpanel(object):
             value = line.strip().split(':')
             map[value[0]] = value[1]
         fr.close()
-        list = sorted(map.items(),key=lambda x:x[0],reverse=False)
-        print(map)
+        list = sorted(map.items(), key=lambda x: x[1], reverse=True)
         print(list)
         return list
 

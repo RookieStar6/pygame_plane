@@ -81,6 +81,7 @@ class Game(object):
         self.back_button_sprite.rect.centery, self.back_button_sprite.rect.centery = 20, 30
         self.help = Help()
         self.all_group.add(self.help)
+        self.click_flag=True
 
     def rest_game(self):
 
@@ -122,18 +123,22 @@ class Game(object):
                         self.hud_panel = HUDpanel(self.all_group)
                         time.sleep(0.1)
                     # Initialize
-                    self.create_enemies()
-                    self.create_supply()
-                    self.all_group.remove(self.menu)
+                    if self.click_flag :
+                        print("-------",self.click_flag)
+                        self.create_enemies()
+                        self.create_supply()
+                        pygame.time.set_timer(HERO_FIRE_EVENT, 200)
+                        self.all_group.remove(self.menu)
                     # menu should be removed
                     self.all_group.remove(self.menu_record)
                     self.all_group.remove(self.menu_background)
                     self.all_group.remove(self.help)
                     self.all_group.remove(self.title)
 
-                    pygame.time.set_timer(HERO_FIRE_EVENT, 200)
+                    #pygame.time.set_timer(HERO_FIRE_EVENT, 200)
                 elif self.menu_record.rect.left < self.pos[0] < self.menu_record.rect.right and self.menu_record.rect.top < self.pos[
                     1] < self.menu_record.rect.bottom:
+                    self.click_flag=False
                     self.bg2_group.add(Background2('bg.png'))
                     self.all_group.add(self.bg2_group)
                     time.sleep(0.05)
@@ -144,6 +149,7 @@ class Game(object):
                         i.kill()
                     self.hud_panel.delete_rankpanel(self.all_group)
                     self.all_group.remove(self.back_button_sprite)
+                    self.click_flag =True
 
             # 处理事件监听
             if self.hud_panel.lives_count == 0:
