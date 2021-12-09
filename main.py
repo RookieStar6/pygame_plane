@@ -3,7 +3,7 @@ from game_hud import *
 from game_items import *
 from game_music import *
 import random
-
+import  time
 
 class Game(object):
 
@@ -21,9 +21,10 @@ class Game(object):
         self.supplies_group = pygame.sprite.Group()  # 道具组
         self.boss_group = pygame.sprite.Group()  # boss组
         # 游戏精灵
-        # Background(False, self.all_group)  # 背景精灵1
-        # Background(True, self.all_group)  # 背景精灵2
-        self.all_group.add(Background('bg1.jpg', False), Background('bg1.jpg', True))  # 添加两个精灵
+        #Background('bg1.jpg', False, self.all_group)  # 背景精灵1
+        #Background('bg1.jpg', True,self.all_group)  # 背景精灵2
+        self.bg2_group = pygame.sprite.Group()
+        self.all_group.add(Background('bg.jpg', False), Background('bg.jpg', True))  # 添加两个精灵
         # myplane = Plane(("me1.png","me2.png"),  self.all_group)
         self.myplane = Hero(self.all_group, self.myplane_group)
 
@@ -45,6 +46,10 @@ class Game(object):
         # Menu
         self.menu = Menu()
         self.all_group.add(self.menu)
+        self.menu_record =Menu_record()
+        self.all_group.add(self.menu_record)
+        self.back_button_sprite = BackButton('back_button.png')
+        self.back_button_sprite.rect.centery, self.back_button_sprite.rect.centery = 20, 30
     def rest_game(self):
         # 重置游戏数据
         self.is_game_over = False
@@ -78,12 +83,28 @@ class Game(object):
             if pygame.mouse.get_pressed()[0]:
                 pos = pygame.mouse.get_pos()
                 if self.menu.rect.left < pos[0] < self.menu.rect.right and self.menu.rect.top < pos[
-                    1] < self.menu.rect.bottom:
+                    1] < self.menu.rect.bottom-85:
                     # 初始化敌机
                     self.create_enemies()
                     # 初始化道具
                     self.create_supply()
                     self.all_group.remove(self.menu)
+                    # 创建玩家后，触发子弹事件
+                    self.all_group.remove(self.menu_record)
+                    pygame.time.set_timer(HERO_FIRE_EVENT, 200)
+                elif self.menu_record.rect.left < pos[0] < self.menu_record.rect.right and self.menu_record.rect.top < pos[
+                    1] < self.menu_record.rect.bottom:
+                    self.bg2_group.add(Background2('bg.png'))
+                    self.all_group.add(self.bg2_group)
+                    time.sleep(0.05)
+                    self.hud_panel.show_rank(self.all_group)
+                    self.all_group.add(self.back_button_sprite)
+                if self.back_button_sprite.rect.left < pos[0] < self.back_button_sprite.rect.right:
+                    for i in self.bg2_group:
+                        i.kill()
+                    self.hud_panel.delete_rankpanel(self.all_group)
+                    self.all_group.remove(self.back_button_sprite)
+
             # 处理事件监听
             if self.hud_panel.lives_count == 0:
                 self.is_game_over = True

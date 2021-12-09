@@ -1,7 +1,6 @@
 # 游戏面板，管理状态，分数，炸弹提示，生命条数，文字提示
 from game_items import *
-import json
-
+import operator
 
 class HUDpanel(object):
     margin = 10  # 精灵的距离
@@ -71,18 +70,37 @@ class HUDpanel(object):
         self.level_up.rect.midright = (SCREEN_RECT.right - self.margin,
                                        self.status_sprite.rect.centery)
 
-        self.rank_label = Rank('usidahuasihdiuashdi', 48, self.white)
-        self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
-                                          self.best_label.rect.top - 5 * self.margin)
         # 排名标签
         rank_list = self.read_rank()
-        for i in rank_list:
-            count =0
-            self.rank_label = Rank(i[0], 48, self.white, display_group)
-            print(i[0])
-            self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
-                                              self.best_label.rect.top - count*5*self.margin)
-            count +=1
+        print(type(rank_list[0][0]))
+        self.Title_label = Label('Rank    List', 75, self.white)
+        self.Title_label.rect.centerx ,self.Title_label.rect.centery= SCREEN_RECT.centerx,150
+
+        self.back_button_sprite = BackButton('back_button.png',)
+        self.back_button_sprite.rect.centery ,self.back_button_sprite.rect.centery =20,30
+
+        self.rank_label1 = Rank(rank_list[0][0], 45, self.white)
+        self.rank_label1_score = Rank(rank_list[0][1], 45, self.white)
+        self.rank_label2 = Rank(rank_list[1][0], 45, self.white)
+        self.rank_label2_score = Rank(rank_list[1][1], 45, self.white)
+        self.rank_label3 = Rank(rank_list[2][0], 45, self.white)
+        self.rank_label3_score = Rank(rank_list[2][1], 45, self.white)
+
+        # self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
+        #                                   self.best_label.rect.top - count*5*self.margin)
+        self.rank_label1.rect.centerx = SCREEN_RECT.centerx - 100
+        self.rank_label1.rect.centery = 300
+        self.rank_label2.rect.centerx = SCREEN_RECT.centerx - 100
+        self.rank_label2.rect.centery = 400
+        self.rank_label3.rect.centerx = SCREEN_RECT.centerx - 100
+        self.rank_label3.rect.centery = 500
+
+        self.rank_label1_score.rect.centerx = SCREEN_RECT.centerx + 100
+        self.rank_label1_score.rect.centery = 300
+        self.rank_label2_score.rect.centerx = SCREEN_RECT.centerx + 100
+        self.rank_label2_score.rect.centery = 400
+        self.rank_label3_score.rect.centerx = SCREEN_RECT.centerx + 100
+        self.rank_label3_score.rect.centery = 500
 
     def read_rank(self):
         fr = open('record2.txt', 'r', encoding='UTF-8')
@@ -91,9 +109,13 @@ class HUDpanel(object):
             value = line.strip().split(':')
             map[value[0]] = value[1]
         fr.close()
-        list = sorted(map.items(), key=lambda item: item[1], reverse=True)
+        list = sorted(map.items(),key=lambda x:x[0],reverse=False)
+        print(map)
         print(list)
         return list
+
+    def show_rank(self, display_group):
+        display_group.add(self.Title_label,self.rank_label1,self.rank_label1_score,self.rank_label2,self.rank_label2_score,self.rank_label3,self.rank_label3_score)
 
     def change_bomb(self, count):
         self.boom_label.set_text('X %d' % count)
@@ -206,6 +228,9 @@ class HUDpanel(object):
         display_group.remove(self.best_label, self.status_label, self.tips_label)
         # 恢复暂停按钮
         self.status_sprite.switch_status(False)
+
+    def delete_rankpanel(self,display_group):
+        display_group.remove(self.Title_label,self.rank_label1,self.rank_label1_score,self.rank_label2,self.rank_label2_score,self.rank_label3,self.rank_label3_score)
 
     def reset_panel(self):
         self.score = 0

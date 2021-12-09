@@ -72,6 +72,18 @@ class Background(GameSprite):
             self.rect.y = - self.rect.y
 
 
+class Background2(GameSprite):
+    def __init__(self, filename, *group):
+        # 如果flag是True,显示在窗口内部，反之外部
+        super(Background2, self).__init__(filename, 0, *group)
+
+    def update(self, *args):
+        super(Background2, self).update(self, *args)
+        # 如果图片已经滚动到最底部，让他返回surface最上面
+        if self.rect.y > self.rect.h:
+            self.rect.y = - self.rect.y
+
+
 class StatusButton(GameSprite):
     # 状态按钮精灵
     def __init__(self, image_names, *group):
@@ -82,6 +94,15 @@ class StatusButton(GameSprite):
 
     def switch_status(self, is_pause):
         self.image = self.images[1 if is_pause else 0]
+
+
+class BackButton(GameSprite):
+    # 状态按钮精灵
+    def __init__(self, image_name, *group):
+        # 第一个参数是一个元组，下标为0是暂停的图片，下标为1是运行的图片
+        super(BackButton, self).__init__(image_name, 0, *group)
+        # 准备用于切换的两个图片
+        self.images = pygame.image.load(self.image_path + image_name)
 
 
 class Label(pygame.sprite.Sprite):
@@ -295,7 +316,7 @@ class Hero(Plane):
         self.rect.midbottom = HERO_DEFAULT_POSITION
 
         # 创建玩家后，触发子弹事件
-        pygame.time.set_timer(HERO_FIRE_EVENT, 200)
+        # pygame.time.set_timer(HERO_FIRE_EVENT, 200)
 
     def update(self, *args):
         super(Hero, self).update(*args)
@@ -647,7 +668,15 @@ class Supply(GameSprite):
 
 class Menu(GameSprite):
     def __init__(self, *group):
-        super(Menu, self).__init__('start_buttom.png', 0, *group)
+        super(Menu, self).__init__('game_title.png', 0, *group)
         self.rect = self.image.get_rect()
         self.rect.centerx = SCREEN_RECT.centerx
-        self.rect.centery = SCREEN_RECT.centery - 100
+        self.rect.centery = SCREEN_RECT.centery
+
+
+class Menu_record(GameSprite):
+    def __init__(self, *group):
+        super(Menu_record, self).__init__('start_button.png', 0, *group)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = SCREEN_RECT.centerx
+        self.rect.centery = SCREEN_RECT.centery + 100
