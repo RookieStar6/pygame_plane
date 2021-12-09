@@ -4,11 +4,12 @@ import operator
 
 from components.game_items import *
 from states.constant import *
-import json
 
 class HUDpanel(object):
     margin = 10  # a constant to control the position of sprite
-
+    white = (255, 255, 255)
+    gray = (64, 64, 64)
+    black = (0, 0, 0)
     reward_score = 100000
     level2_score = 10000
     level3_score = 50000

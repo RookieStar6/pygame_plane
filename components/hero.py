@@ -19,7 +19,7 @@ class Hero(Plane):
 
         self.rect.midbottom = HERO_DEFAULT_POSITION
 
-        pygame.time.set_timer(HERO_FIRE_EVENT, 200)
+        # pygame.time.set_timer(HERO_FIRE_EVENT, 200)
 
     def update(self, *args):
         '''
