@@ -239,3 +239,6 @@ class HUDpanel(object):
         self.increase_score(0)
         self.change_lives()
         self.change_bomb(3)
+
+    # def display_hud(self, change_group):
+

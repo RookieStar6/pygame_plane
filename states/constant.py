@@ -6,6 +6,7 @@ import pygame
 WHITE = (255, 255, 255)
 GRAY = (64, 64, 64)
 BLACK = (0, 0, 0)
+TITLE_COLOR = (141, 254, 234)
 
 SCREEN_RECT = pygame.Rect(0, 0, 480, 768)
 FRAME_INTERVAL = 10  # the interval of fire animation

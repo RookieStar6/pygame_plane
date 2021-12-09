@@ -57,7 +57,7 @@ class BackButton(GameSprite):
 
 class Label(pygame.sprite.Sprite):
 
-    font_path = './resource/font/font.ttf'
+    font_path = './resource/font/UnidreamLED.ttf'
 
     def __init__(self, text, size, color, *groups):
         super(Label, self).__init__(*groups)

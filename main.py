@@ -10,18 +10,19 @@ from components.boss import *
 from components.supply import *
 from game_music import *
 import random
-import  time
+import time
 
 class Game(object):
 
     def __init__(self):
         # win
         self.main_window = pygame.display.set_mode(SCREEN_RECT.size)
-        pygame.display.set_caption("飞机大战")
+        pygame.display.set_caption("The Shot")
         # status
         self.is_game_over = False
         self.is_game_pause = False
         self.is_boss_kill = False
+        self.is_hud_set = False
         # sprite group
         self.myplane_group = pygame.sprite.Group()  # player
         self.all_group = pygame.sprite.Group()  # all sprited
@@ -43,16 +44,17 @@ class Game(object):
         self.enemies_group = pygame.sprite.Group()  # 敌军组
         self.supplies_group = pygame.sprite.Group()  # 道具组
         self.boss_group = pygame.sprite.Group()  # boss组
+        self.empty_group = pygame.sprite.Group()
         # 游戏精灵
         #Background('bg1.jpg', False, self.all_group)  # 背景精灵1
         #Background('bg1.jpg', True,self.all_group)  # 背景精灵2
         self.bg2_group = pygame.sprite.Group()
-        self.all_group.add(Background('bg.jpg', False), Background('bg.jpg', True))  # 添加两个精灵
+        self.all_group.add(Background('bg1.jpg', False), Background('bg1.jpg', True))  # 添加两个精灵
         # myplane = Plane(("me1.png","me2.png"),  self.all_group)
         self.myplane = Hero(self.all_group, self.myplane_group)
 
         # game panel
-        self.hud_panel = HUDpanel(self.all_group)
+        self.hud_panel = HUDpanel(self.empty_group)
 
         # update the number of bomb
         self.hud_panel.change_bomb(self.myplane.bomb_count)
@@ -67,21 +69,27 @@ class Game(object):
         self.player = MusicPlayer('game_music.ogg')
         self.player.play_music()
 
+        self.title = Title(self.all_group)
         # Menu
+        self.menu_background = Menu_background()
+        self.all_group.add(self.menu_background)
         self.menu = Menu()
         self.all_group.add(self.menu)
         self.menu_record =Menu_record()
         self.all_group.add(self.menu_record)
         self.back_button_sprite = BackButton('back_button.png')
         self.back_button_sprite.rect.centery, self.back_button_sprite.rect.centery = 20, 30
+        self.help = Help()
+        self.all_group.add(self.help)
+
     def rest_game(self):
 
         self.is_game_over = False
         self.is_game_pause = False
         self.is_boss_kill = False
-
+        self.is_hud_set = True
         self.hud_panel.reset_panel()
-
+        self.pos = ()
         # 重新玩游戏的时候，英雄飞机位置要放到初始位置
         self.myplane.rect.midbottom = HERO_DEFAULT_POSITION
         self.boss1.reset()
@@ -106,25 +114,32 @@ class Game(object):
 
         while True:
             if pygame.mouse.get_pressed()[0]:
-                pos = pygame.mouse.get_pos()
-                if self.menu.rect.left < pos[0] < self.menu.rect.right and self.menu.rect.top < pos[
-                    1] < self.menu.rect.bottom-85:
-                    # 初始化敌机
+                self.pos = pygame.mouse.get_pos()
+
+                if self.menu.rect.left < self.pos[0] < self.menu.rect.right and self.menu.rect.top < self.pos[
+                    1] < self.menu.rect.bottom:
+                    if not self.is_hud_set:
+                        self.hud_panel = HUDpanel(self.all_group)
+                        time.sleep(0.1)
+                    # Initialize
                     self.create_enemies()
-                    # 初始化道具
                     self.create_supply()
                     self.all_group.remove(self.menu)
-                    # 创建玩家后，触发子弹事件
+                    # menu should be removed
                     self.all_group.remove(self.menu_record)
+                    self.all_group.remove(self.menu_background)
+                    self.all_group.remove(self.help)
+                    self.all_group.remove(self.title)
+
                     pygame.time.set_timer(HERO_FIRE_EVENT, 200)
-                elif self.menu_record.rect.left < pos[0] < self.menu_record.rect.right and self.menu_record.rect.top < pos[
+                elif self.menu_record.rect.left < self.pos[0] < self.menu_record.rect.right and self.menu_record.rect.top < self.pos[
                     1] < self.menu_record.rect.bottom:
                     self.bg2_group.add(Background2('bg.png'))
                     self.all_group.add(self.bg2_group)
                     time.sleep(0.05)
                     self.hud_panel.show_rank(self.all_group)
                     self.all_group.add(self.back_button_sprite)
-                if self.back_button_sprite.rect.left < pos[0] < self.back_button_sprite.rect.right:
+                if self.back_button_sprite.rect.left < self.pos[0] < self.back_button_sprite.rect.right:
                     for i in self.bg2_group:
                         i.kill()
                     self.hud_panel.delete_rankpanel(self.all_group)
@@ -133,7 +148,8 @@ class Game(object):
             # 处理事件监听
             if self.hud_panel.lives_count == 0:
                 self.is_game_over = True
-            if self.evevnt_handler():
+
+            if self.event_handler():
                 # event_handle返回了True,则说明发生了退出事件
 
                 # 退出游戏之前要保存最好成绩
@@ -143,6 +159,7 @@ class Game(object):
             if self.is_game_over:
                 # 显示面板中央的一些提示信息， 暂停和结束 有不同的提示
                 self.hud_panel.panel_paused(True, self.all_group)
+                self.pos = ()
             elif self.is_game_pause:
                 self.hud_panel.panel_paused(False, self.all_group)
             else:
@@ -164,10 +181,10 @@ class Game(object):
             self.all_group.draw(self.main_window)
             # 刷新界面
             pygame.display.update()
-            # 设置FPS`
+            # FPS
             clock.tick(60)
 
-    def evevnt_handler(self):
+    def event_handler(self):
         # 获取并处理事件
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -179,6 +196,7 @@ class Game(object):
                 if self.is_game_over:
                     # 游戏已经结束，重置游戏
                     self.rest_game()
+                    pos = ()
                 else:
                     # 游戏还没有结束，切换成暂停状态
                     self.is_game_pause = not self.is_game_pause
@@ -347,7 +365,7 @@ class Game(object):
 
         hero_boss_hit = pygame.sprite.groupcollide(self.myplane_group, self.boss_group,
                                               False, False, pygame.sprite.collide_mask)
-        print(hero_boss_hit)
+
         if len(hero_boss_hit) > 0:
             self.myplane.hp -= 1
 
