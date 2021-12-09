@@ -15,3 +15,14 @@ class Background(GameSprite):
         # the image will move to the top of win if it moves out of the bottom
         if self.rect.y > self.rect.h:
             self.rect.y = - self.rect.y
+
+class Background2(GameSprite):
+    def __init__(self, filename, *group):
+        #flag: true-image will be drawn in the win, and vice versa
+        super(Background2, self).__init__(filename, 0, *group)
+
+    def update(self, *args):
+        super(Background2, self).update(self, *args)
+        # the image will move to the top of win if it moves out of the bottom
+        if self.rect.y > self.rect.h:
+            self.rect.y = - self.rect.y

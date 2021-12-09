@@ -1,5 +1,5 @@
-# 游戏面板，管理状态，分数，炸弹提示，生命条数，文字提示
-from game_items import *
+
+# from game_items import *
 import operator
 
 from components.game_items import *
@@ -7,9 +7,7 @@ from states.constant import *
 
 class HUDpanel(object):
     margin = 10  # a constant to control the position of sprite
-    white = (255, 255, 255)
-    gray = (64, 64, 64)
-    black = (0, 0, 0)
+
     reward_score = 100000
     level2_score = 10000
     level3_score = 50000
@@ -75,18 +73,18 @@ class HUDpanel(object):
         # 排名标签
         rank_list = self.read_rank()
         print(type(rank_list[0][0]))
-        self.Title_label = Label('Rank    List', 75, self.white)
+        self.Title_label = Label('Rank    List', 75, WHITE)
         self.Title_label.rect.centerx ,self.Title_label.rect.centery= SCREEN_RECT.centerx,150
 
         self.back_button_sprite = BackButton('back_button.png',)
         self.back_button_sprite.rect.centery ,self.back_button_sprite.rect.centery =20,30
 
-        self.rank_label1 = Rank(rank_list[0][0], 45, self.white)
-        self.rank_label1_score = Rank(rank_list[0][1], 45, self.white)
-        self.rank_label2 = Rank(rank_list[1][0], 45, self.white)
-        self.rank_label2_score = Rank(rank_list[1][1], 45, self.white)
-        self.rank_label3 = Rank(rank_list[2][0], 45, self.white)
-        self.rank_label3_score = Rank(rank_list[2][1], 45, self.white)
+        self.rank_label1 = Rank(rank_list[0][0], 45, WHITE)
+        self.rank_label1_score = Rank(rank_list[0][1], 45, WHITE)
+        self.rank_label2 = Rank(rank_list[1][0], 45, WHITE)
+        self.rank_label2_score = Rank(rank_list[1][1], 45, WHITE)
+        self.rank_label3 = Rank(rank_list[2][0], 45, WHITE)
+        self.rank_label3_score = Rank(rank_list[2][1], 45, WHITE)
 
         # self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
         #                                   self.best_label.rect.top - count*5*self.margin)
