@@ -11,7 +11,7 @@ from components.supply import *
 from game_music import *
 import random
 import time
-
+from inputbox import *
 class Game(object):
 
     def __init__(self):
@@ -84,7 +84,8 @@ class Game(object):
         self.help_information = Help_information()
         self.help_bg = Background2('bg.png')
         self.click_flag=True
-
+        # self.inputbox = InputBox(pygame.Rect(100, 20, 140, 32))  # 输入框
+        # self.all_group.add(self.inputbox)
     def rest_game(self):
 
         self.is_game_over = False
@@ -126,7 +127,6 @@ class Game(object):
                         time.sleep(0.1)
                     # Initialize
                     if self.click_flag :
-                        print("-------",self.click_flag)
                         self.create_enemies()
                         self.create_supply()
                         pygame.time.set_timer(HERO_FIRE_EVENT, 200)
@@ -210,7 +210,7 @@ class Game(object):
                 if self.is_game_over:
                     # 游戏已经结束，重置游戏
                     self.rest_game()
-                    pos = ()
+                    #self.all_group.add(self.inputbox)
                 else:
                     # 游戏还没有结束，切换成暂停状态
                     self.is_game_pause = not self.is_game_pause

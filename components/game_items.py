@@ -49,9 +49,7 @@ class StatusButton(GameSprite):
 class BackButton(GameSprite):
     # 状态按钮精灵
     def __init__(self, image_name, *group):
-        # 第一个参数是一个元组，下标为0是暂停的图片，下标为1是运行的图片
         super(BackButton, self).__init__(image_name, 0, *group)
-        # 准备用于切换的两个图片
         self.images = pygame.image.load(self.image_path + image_name)
 
 

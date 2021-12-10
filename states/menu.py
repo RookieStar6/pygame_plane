@@ -52,14 +52,14 @@ class Ending(Label):
         super(Ending, self).__init__(text, 40, TITLE_COLOR, *group)
         self.rect = self.image.get_rect()
         self.rect.centerx = SCREEN_RECT.centerx
-        self.rect.initial_y = y
+        self.initial_y = y
         self.rect.centery = y
 
 
     def update(self, *args):
         self.rect.y += 1
         if self.rect.y >= SCREEN_RECT.centery * 2:
-            self.rect.y = self.recy.initial_y
+            self.rect.y = self.initial_y
 
 
 class congratulation():

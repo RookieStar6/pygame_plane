@@ -1,9 +1,9 @@
-
 # from game_items import *
 import operator
 
 from components.game_items import *
 from states.constant import *
+
 
 class HUDpanel(object):
     margin = 10  # a constant to control the position of sprite
@@ -25,6 +25,7 @@ class HUDpanel(object):
         self.lives_count = 3
         self.level = 1
         self.best_score = 0
+        self.best_score_list =[]
         self.load_best_score()
         # 图像精灵
         # 状态按钮
@@ -71,50 +72,45 @@ class HUDpanel(object):
                                        self.status_sprite.rect.centery)
 
         # 排名标签
-        rank_list = self.read_rank()
-        print(type(rank_list[0][0]))
+        #self.rank_list = self.read_rank()
         self.Title_label = Label('Rank    List', 75, WHITE)
-        self.Title_label.rect.centerx ,self.Title_label.rect.centery= SCREEN_RECT.centerx,150
+        self.Title_label.rect.centerx, self.Title_label.rect.centery = SCREEN_RECT.centerx, 150
 
-        self.back_button_sprite = BackButton('back_button.png',)
-        self.back_button_sprite.rect.centery ,self.back_button_sprite.rect.centery =20,30
+        self.back_button_sprite = BackButton('back_button.png', )
+        self.back_button_sprite.rect.centery, self.back_button_sprite.rect.centery = 20, 30
+        print(self.best_score_list)
+        if len(self.best_score_list) > 0:
+            self.rank_label1_score = Rank(str(self.best_score_list[0]), 45, WHITE)
+            self.rank_label1_score.rect.centerx, self.rank_label1_score.rect.centery = SCREEN_RECT.centerx , 300
 
-        self.rank_label1 = Rank(rank_list[0][0], 45, WHITE)
-        self.rank_label1_score = Rank(rank_list[0][1], 45, WHITE)
-        self.rank_label2 = Rank(rank_list[1][0], 45, WHITE)
-        self.rank_label2_score = Rank(rank_list[1][1], 45, WHITE)
-        self.rank_label3 = Rank(rank_list[2][0], 45, WHITE)
-        self.rank_label3_score = Rank(rank_list[2][1], 45, WHITE)
+        if len(self.best_score_list) > 1:
+            print(self.best_score_list[1])
+            self.rank_label2_score = Rank(str(self.best_score_list[1]), 45, WHITE)
+            self.rank_label2_score.rect.centerx = SCREEN_RECT.centerx
+            self.rank_label2_score.rect.centery = 400
+        if len(self.best_score_list) > 2:
+            self.rank_label3_score = Rank(str(self.best_score_list[2]), 45, WHITE)
+            self.rank_label3_score.rect.centerx, self.rank_label3_score.rect.centery = SCREEN_RECT.centerx, 500
 
-        # self.rank_label.rect.midbottom = (self.best_label.rect.centerx,
-        #                                   self.best_label.rect.top - count*5*self.margin)
-        self.rank_label1.rect.centerx = SCREEN_RECT.centerx - 100
-        self.rank_label1.rect.centery = 300
-        self.rank_label2.rect.centerx = SCREEN_RECT.centerx - 100
-        self.rank_label2.rect.centery = 400
-        self.rank_label3.rect.centerx = SCREEN_RECT.centerx - 100
-        self.rank_label3.rect.centery = 500
-
-        self.rank_label1_score.rect.centerx = SCREEN_RECT.centerx + 100
-        self.rank_label1_score.rect.centery = 300
-        self.rank_label2_score.rect.centerx = SCREEN_RECT.centerx + 100
-        self.rank_label2_score.rect.centery = 400
-        self.rank_label3_score.rect.centerx = SCREEN_RECT.centerx + 100
-        self.rank_label3_score.rect.centery = 500
-
-    def read_rank(self):
-        fr = open('record2.txt', 'r', encoding='UTF-8')
-        map = {}
-        for line in fr:
-            value = line.strip().split(':')
-            map[value[0]] = value[1]
-        fr.close()
-        list = sorted(map.items(), key=lambda x: x[1], reverse=True)
-        print(list)
-        return list
+    # def read_rank(self):
+    #     fr = open('record2.txt', 'r', encoding='UTF-8')
+    #     map = {}
+    #     for line in fr:
+    #         value = line.strip().split(':')
+    #         map[value[0]] = value[1]
+    #     fr.close()
+    #     list = sorted(map.items(), key=lambda x: x[1], reverse=True)
+    #     print(list)
+    #     return list
 
     def show_rank(self, display_group):
-        display_group.add(self.Title_label,self.rank_label1,self.rank_label1_score,self.rank_label2,self.rank_label2_score,self.rank_label3,self.rank_label3_score)
+        display_group.add(self.Title_label)
+        if len(self.best_score_list) > 0:
+            display_group.add(self.rank_label1_score)
+        if len(self.best_score_list) > 1:
+            display_group.add(self.rank_label2_score)
+        if len(self.best_score_list) > 2:
+            display_group.add(self.rank_label3_score)
 
     def change_bomb(self, count):
         self.boom_label.set_text('X %d' % count)
@@ -177,19 +173,23 @@ class HUDpanel(object):
 
     def save_best_score(self):
         # 保存最好成绩到文件中
-        file = open(self.record_filename, "w")
-        file.write("%d" % self.best_score)
-        file.close()
+        if self.score >0 :
+            file = open(self.record_filename, "a")
+            file.write("%d \n" % self.score)
+            file.close()
 
     def load_best_score(self):
         try:
             # 读取最好成绩
             file = open(self.record_filename, "r")
-            content = file.read()
-            file.close()
-
-            # 读出来的是字符串，转int
-            self.best_score = int(content)
+            while True:
+                line = file.readline()
+                if not line :
+                    break
+                self.best_score_list.append(int(line))
+            self.best_score_list.sort(reverse=True)
+            if len(self.best_score_list)>0 :
+                self.best_score=self.best_score_list[0]
         except FileNotFoundError:
             print("读取文件异常")
 
@@ -229,8 +229,14 @@ class HUDpanel(object):
         # 恢复暂停按钮
         self.status_sprite.switch_status(False)
 
-    def delete_rankpanel(self,display_group):
-        display_group.remove(self.Title_label,self.rank_label1,self.rank_label1_score,self.rank_label2,self.rank_label2_score,self.rank_label3,self.rank_label3_score)
+    def delete_rankpanel(self, display_group):
+        display_group.remove(self.Title_label)
+        if len(self.best_score_list) > 0:
+            display_group.remove(self.rank_label1_score)
+        if len(self.best_score_list) > 1:
+            display_group.remove(self.rank_label2_score)
+        if len(self.best_score_list) > 2:
+            display_group.remove(self.rank_label3_score)
 
     def reset_panel(self):
         self.score = 0
@@ -242,4 +248,3 @@ class HUDpanel(object):
         self.change_bomb(3)
 
     # def display_hud(self, change_group):
-
