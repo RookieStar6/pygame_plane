@@ -6,7 +6,6 @@ from components.bullet import *
 from states.constant import *
 
 class Enemy(Plane):
-
     def __init__(self, kind, max_speed, *group):
         self.kind = kind
         self.max_speed = max_speed
