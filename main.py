@@ -11,11 +11,17 @@ from components.supply import *
 from game_music import *
 import random
 import time
+
+
+#-------------------------------------------------------------------
+# */code ---- This game is inspired by a same type of Pygame course video,
+#  and some fundamental codes are refered from the links below:
+#  https://www.bilibili.com/video/BV1vz411i7hP?p=1
+#  https://xuexi.boxuegu.com/video.html?courseId=1569
+#-------------------------------------------------------------------
+
 class Game(object):
-    # */code ---- This game is inspired by a same type of game video,
-    #  and some fundamental codes are refered from the links below:
-    #  https://www.bilibili.com/video/BV1vz411i7hP?p=1
-    #  https://xuexi.boxuegu.com/video.html?courseId=1569
+
     def __init__(self):
         # win
         self.main_window = pygame.display.set_mode(SCREEN_RECT.size)
@@ -40,14 +46,14 @@ class Game(object):
         self.menu = Menu()
         self.all_group.add(self.menu)
         #hero
-        # 精灵组
+        #Sprite Group
         self.myplane_group = pygame.sprite.Group()  # gamers
         self.all_group = pygame.sprite.Group()  # Total sprite group
         self.enemies_group = pygame.sprite.Group()  # The enemy sprite group
         self.supplies_group = pygame.sprite.Group()  # support sprite group
         self.boss_group = pygame.sprite.Group()  # boss sprite group
         self.empty_group = pygame.sprite.Group()
-        # 游戏精灵
+        # Sprite
         self.bg2_group = pygame.sprite.Group()
         self.all_group.add(Background('bg1.jpg', False), Background('bg1.jpg', True))
         # myplane = Plane(("me1.png","me2.png"),  self.all_group)
@@ -265,8 +271,6 @@ class Game(object):
                     if self.boss2.hp > 0 and self.is_boss_kill:
                         self.boss2.fire((self.all_group))
 
-                # elif event.type == NEW_LEVEL_EVENT:
-                #     self.create_enemies()
         return False
 
     def create_enemies(self):
@@ -336,12 +340,6 @@ class Game(object):
         elif self.hud_panel.level == 7:
             self.ending = congratulation(self.all_group)
 
-    def create_boss(self):
-
-        group = (self.all_group, self.boss_group)
-        if self.hud_panel.level >= 1:
-            # 关卡1
-            Boss1(1, 100, 1, *group)
 
     def check_collide(self):
         '''
@@ -410,11 +408,7 @@ class Game(object):
                     self.create_enemies()
                 boss.kill()
                 self.boss_group.remove()
-                # new_level = pygame.event.Event(NEW_LEVEL_EVENT)
-                # pygame.event.post(new_level)
-            # if self.hud_panel.increase_score(boss.value):
-            #     # 升级音效
-            #     self.player.play_sound("upgrade.wav")
+
 
         for enemy in hit_enemies:
             if enemy.hp <= 0:
