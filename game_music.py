@@ -6,12 +6,12 @@ class MusicPlayer(object):
     res_path = './resource/sound/'
 
     def __init__(self, music_file):
-        # 初始化音乐播放器
-        # 背景音乐
+        # Initialize the music player
+        # The background music
         pygame.mixer.music.load(self.res_path + music_file)
         pygame.mixer.music.set_volume(1)
 
-        # 初始化音效字典
+        # Initialize the sound dictionary
         self.sound_dirt = {}
 
         files = os.listdir(self.res_path)
@@ -21,12 +21,12 @@ class MusicPlayer(object):
             sound = pygame.mixer.Sound(self.res_path + file)
             self.sound_dirt[file] = sound
 
-    # 播放背景音乐
+    # Play background music
     @staticmethod
     def play_music():
         pygame.mixer.music.play(-1)
 
-    # 根据暂停判断是否播放音乐
+    # Based on the key value (file name) of the map, play the music
     @staticmethod
     def pause_music(is_pause):
         if is_pause:
@@ -34,11 +34,7 @@ class MusicPlayer(object):
         else:
             pygame.mixer.music.unpause()
 
-    @staticmethod
-    def pause_music2():
-        pygame.mixer.music.pause()
-
-    # 根据map 的key值(文件名)，直接播放音乐
+    # The music is played directly according to the map key value (file name)
     def play_sound(self, music_name):
         self.sound_dirt[music_name].play()
     def stop_sound(self, music_name):

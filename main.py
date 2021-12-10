@@ -12,6 +12,8 @@ from game_music import *
 import random
 import time
 from inputbox import *
+
+
 class Game(object):
     # */code ---- This game is inspired by a same type of game video,
     #  and some fundamental codes are refered from the links below:
@@ -35,12 +37,12 @@ class Game(object):
 
         # Menu
 
-        #background
+        # background
         self.all_group.add(Background('bg1.jpg', False), Background('bg1.jpg', True))
 
         self.menu = Menu()
         self.all_group.add(self.menu)
-        #hero
+        # hero
         # 精灵组
         self.myplane_group = pygame.sprite.Group()  # gamers
         self.all_group = pygame.sprite.Group()  # Total sprite group
@@ -60,11 +62,11 @@ class Game(object):
         # update the number of bomb
         self.hud_panel.change_bomb(self.myplane.bomb_count)
 
-        #initialize the boss
+        # initialize the boss
         self.boss1 = Boss1(1000, 1, self.boss_group)
         self.boss2 = Boss2(1000, 1, self.boss_group)
         # initialize the supply
-        #self.create_supply()
+        # self.create_supply()
 
         # background music
         self.player = MusicPlayer('game_music.ogg')
@@ -76,7 +78,7 @@ class Game(object):
         self.all_group.add(self.menu_background)
         self.menu = Menu()
         self.all_group.add(self.menu)
-        self.menu_record =Menu_record()
+        self.menu_record = Menu_record()
         self.all_group.add(self.menu_record)
         self.back_button_sprite = BackButton('back_button.png')
         self.back_button_sprite.rect.right, self.back_button_sprite.rect.centery = SCREEN_RECT.right - 10, 30
@@ -84,9 +86,8 @@ class Game(object):
         self.all_group.add(self.help)
         self.help_information = Help_information()
         self.help_bg = Background2('bg.png')
-        self.click_flag=True
-        # self.inputbox = InputBox(pygame.Rect(100, 20, 140, 32))  # 输入框
-        # self.all_group.add(self.inputbox)
+        self.click_flag = True
+
     def rest_game(self):
 
         self.is_game_over = False
@@ -106,10 +107,11 @@ class Game(object):
             bullet.kill()
         for boss in self.boss_group:
             boss.kill()
-        for supply in self.supplies_group :
+        for supply in self.supplies_group:
             supply.kill()
         self.create_enemies()
         self.create_supply()
+
     def start(self):
         # Create a clock
         clock = pygame.time.Clock()
@@ -123,34 +125,40 @@ class Game(object):
 
                 if self.menu.rect.left < self.pos[0] < self.menu.rect.right and self.menu.rect.top < self.pos[
                     1] < self.menu.rect.bottom:
-                    if not self.is_hud_set:
+                    if self.is_hud_set == True and self.click_flag == True:
                         self.hud_panel = HUDpanel(self.all_group)
                         time.sleep(0.1)
                     # Initialize
-                    if self.click_flag :
+                    if self.click_flag:
                         self.create_enemies()
                         self.create_supply()
                         pygame.time.set_timer(HERO_FIRE_EVENT, 200)
                         self.all_group.remove(self.menu)
-                    # menu should be removed
-                    self.all_group.remove(self.menu_record)
-                    self.all_group.remove(self.menu_background)
-                    self.all_group.remove(self.help)
-                    self.all_group.remove(self.title)
+                        # menu should be removed
+                        self.all_group.remove(self.menu_record)
+                        self.all_group.remove(self.menu_background)
+                        self.all_group.remove(self.help)
+                        self.all_group.remove(self.title)
 
-                    #pygame.time.set_timer(HERO_FIRE_EVENT, 200)
-                elif self.menu_record.rect.left < self.pos[0] < self.menu_record.rect.right and self.menu_record.rect.top < self.pos[
+                    # pygame.time.set_timer(HERO_FIRE_EVENT, 200)  enter the rank list
+                if self.menu_record.rect.left < self.pos[
+                    0] < self.menu_record.rect.right and self.menu_record.rect.top < self.pos[
                     1] < self.menu_record.rect.bottom:
-                    self.click_flag=False
-                    self.bg2_group.add(Background2('bg.png'))
-                    self.all_group.add(self.bg2_group)
-                    time.sleep(0.05)
-                    self.hud_panel.show_rank(self.all_group)
-                    self.all_group.add(self.back_button_sprite)
-                elif self.help.rect.left < self.pos[0] < self.help.rect.right and self.help.rect.top < self.pos[1] < self.help.rect.bottom:
-                    self.all_group.add(self.help_bg)
-                    self.all_group.add(self.help_information)
-                    self.all_group.add(self.back_button_sprite)
+                    if self.click_flag:
+                        self.click_flag = False
+                        self.bg2_group.add(Background2('bg.png'))
+                        self.all_group.add(self.bg2_group)
+                        time.sleep(0.05)
+                        self.hud_panel.show_rank(self.all_group)
+                        self.all_group.add(self.back_button_sprite)
+
+                if self.help.rect.left < self.pos[0] < self.help.rect.right and self.help.rect.top < self.pos[
+                    1] < self.help.rect.bottom:
+                    if self.click_flag:
+                        self.all_group.add(self.help_bg)
+                        self.all_group.add(self.help_information)
+                        self.all_group.add(self.back_button_sprite)
+
                 if self.back_button_sprite.rect.left < self.pos[0] < self.back_button_sprite.rect.right:
                     for i in self.bg2_group:
                         i.kill()
@@ -158,7 +166,7 @@ class Game(object):
                     self.all_group.remove(self.back_button_sprite)
                     self.all_group.remove(self.help_information)
                     self.all_group.remove(self.help_bg)
-                    self.click_flag =True
+                    self.click_flag = True
 
             # Handling event Listening
             if self.hud_panel.lives_count == 0:
@@ -211,7 +219,7 @@ class Game(object):
                 if self.is_game_over:
                     # The game is over. Reset the game
                     self.rest_game()
-                    #self.all_group.add(self.inputbox)
+                    # self.all_group.add(self.inputbox)
                 else:
                     # The game is not over, switch to pause
                     self.is_game_pause = not self.is_game_pause
@@ -257,18 +265,13 @@ class Game(object):
                         pass
                         enemy.fire(self.all_group)
                 elif event.type == BOSS_EVENT:
-                    self.player.pause_music2()
-                    self.player.play_sound("boss1.wav")
                     if self.boss1.hp > 0 and self.is_boss_kill:
                         self.boss1.fire(self.all_group)
-                    else:
-                        self.player.stop_sound("boss1.wav")
+
                 elif event.type == BOSS2_EVENT:
-                    self.player.play_sound("boss1.wav")
                     if self.boss2.hp > 0 and self.is_boss_kill:
                         self.boss2.fire((self.all_group))
-                    else:
-                        self.player.stop_sound("boss1.wav")
+
                 # elif event.type == NEW_LEVEL_EVENT:
                 #     self.create_enemies()
         return False
@@ -315,7 +318,7 @@ class Game(object):
             for enemy in self.enemies_group:
                 for bullet in enemy.bullets_groups:
                     bullet.kill()
-            #boss 1 appears
+            # boss 1 appears
             self.all_group.add(self.boss1)
             if not self.boss_group:
                 self.boss_group.add(self.boss1)
@@ -385,17 +388,16 @@ class Game(object):
 
         # bBoss bullets collide with the player
         hit1_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss1.bullets_groups,
-                                              False, False, pygame.sprite.collide_mask)
+                                               False, False, pygame.sprite.collide_mask)
 
         hit2_hero = pygame.sprite.groupcollide(self.myplane_group, self.boss2.bullets_groups,
-                                              False, False, pygame.sprite.collide_mask)
+                                               False, False, pygame.sprite.collide_mask)
 
         hero_boss_hit = pygame.sprite.groupcollide(self.myplane_group, self.boss_group,
-                                              False, False, pygame.sprite.collide_mask)
+                                                   False, False, pygame.sprite.collide_mask)
 
         if len(hero_boss_hit) > 0:
             self.myplane.hp -= 1
-
 
         if len(hit1_hero) > 0:
             self.myplane.hp = 0
