@@ -11,7 +11,6 @@ from components.supply import *
 from game_music import *
 import random
 import time
-from inputbox import *
 class Game(object):
     # */code ---- This game is inspired by a same type of game video,
     #  and some fundamental codes are refered from the links below:
