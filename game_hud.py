@@ -219,6 +219,11 @@ class HUDpanel(object):
         self.status_sprite.switch_status(False)
 
     def delete_rankpanel(self, display_group):
+        '''
+        delete the socres from rank
+        :param display_group: sprite.group
+        :return: None
+        '''
         display_group.remove(self.Title_label)
         if len(self.best_score_list) > 0:
             display_group.remove(self.rank_label1_score)
@@ -228,12 +233,14 @@ class HUDpanel(object):
             display_group.remove(self.rank_label3_score)
 
     def reset_panel(self):
+        '''
+        reset the attributes of panel
+        :return: None
+        '''
         self.score = 0
         self.lives_count = 3
 
-        # 重置精灵数据
         self.increase_score(0)
         self.change_lives()
         self.change_bomb(3)
 
-    # def display_hud(self, change_group):
